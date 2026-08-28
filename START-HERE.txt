@@ -1,0 +1,30 @@
+BOSS — START HERE
+
+1. Install Node.js 18+.
+2. Open this folder in a terminal.
+3. Run: npm install
+4. Run: npm run dev
+5. Open the Vite URL shown in the terminal.
+
+WHAT IS INCLUDED
+- BOSS marketplace for websites and AI chatbots.
+- Live demos, product details and ordering.
+- Customer dashboard and BOSS Studio.
+- Website HTML export and chatbot configuration export.
+- Supabase auth/database integration when configured.
+- Flutterwave hosted checkout + webhook verification when configured.
+- Public published-project API for live BOSS project links.
+- Optional server-side AI chatbot endpoint with FAQ fallback.
+- Admin dashboard with local backup/restore and remote order controls.
+
+REAL BACKEND SETUP
+- Copy .env.example to .env.
+- Run supabase/schema.sql in Supabase.
+- For real payments, configure the server environment variables in .env on your deployment platform.
+- For AI, configure AI_API_URL, AI_API_KEY and AI_MODEL.
+- For Vercel, deploy the project and set the same environment variables in the Vercel project settings.
+
+IMPORTANT
+The included catalog prices are currently in USD. If you switch to UGX, update the catalog prices and FLW_CURRENCY together.
+
+See README.md and PRODUCTION-UPGRADE.md for the full setup and security notes.

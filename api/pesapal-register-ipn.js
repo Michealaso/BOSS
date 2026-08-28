@@ -1,0 +1,10 @@
+import { createClient } from '@supabase/supabase-js';
+const BASE={sandbox:'https://cybqa.pesapal.com/pesapalv3',live:'https://pay.pesapal.com/v3'};
+export default async function handler(req,res){
+ if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
+ const {SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,PESAPAL_ENV='sandbox',PESAPAL_CONSUMER_KEY,PESAPAL_CONSUMER_SECRET,PESAPAL_IPN_URL}=process.env;
+ if(!SUPABASE_URL||!SUPABASE_SERVICE_ROLE_KEY||!PESAPAL_CONSUMER_KEY||!PESAPAL_CONSUMER_SECRET||!PESAPAL_IPN_URL)return res.status(503).json({error:'Pesapal/IPN configuration is incomplete.'});
+ const auth=req.headers.authorization||'',a=auth.startsWith('Bearer ')?auth.slice(7):'';if(!a)return res.status(401).json({error:'Authentication required.'});const db=createClient(SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,{auth:{autoRefreshToken:false,persistSession:false}});const {data:u}=await db.auth.getUser(a);if(!u?.user)return res.status(401).json({error:'Invalid session.'});const {data:p}=await db.from('profiles').select('role').eq('id',u.user.id).maybeSingle();if(p?.role!=='admin')return res.status(403).json({error:'Admin access required.'});
+ const base=BASE[PESAPAL_ENV]||BASE.sandbox;const ar=await fetch(`${base}/api/Auth/RequestToken`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({consumer_key:PESAPAL_CONSUMER_KEY,consumer_secret:PESAPAL_CONSUMER_SECRET})});const ad=await ar.json();if(!ar.ok||!ad.token)return res.status(502).json({error:'Pesapal authentication failed.'});
+ const r=await fetch(`${base}/api/URLSetup/RegisterIPN`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json',Authorization:`Bearer ${ad.token}`},body:JSON.stringify({url:PESAPAL_IPN_URL,ipn_notification_type:'GET'})});const d=await r.json();if(!r.ok||!d.ipn_id)return res.status(502).json({error:d?.message||'Could not register IPN.',details:d});return res.status(200).json({ipn_id:d.ipn_id,url:d.url,status:d.status});
+}

@@ -1,0 +1,17 @@
+import { createClient } from '@supabase/supabase-js';
+const SANDBOX_BASE='https://cybqa.pesapal.com/pesapalv3', LIVE_BASE='https://pay.pesapal.com/v3';
+async function getToken(base,key,secret){const r=await fetch(`${base}/api/Auth/RequestToken`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({consumer_key:key,consumer_secret:secret})});const d=await r.json().catch(()=>({}));if(!r.ok||!d.token)throw new Error(d?.message||'Pesapal authentication failed.');return d.token;}
+export default async function handler(req,res){
+ if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
+ const {SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,PESAPAL_ENV='sandbox',PESAPAL_CONSUMER_KEY,PESAPAL_CONSUMER_SECRET,PESAPAL_CURRENCY='UGX'}=process.env;
+ if(!SUPABASE_URL||!SUPABASE_SERVICE_ROLE_KEY||!PESAPAL_CONSUMER_KEY||!PESAPAL_CONSUMER_SECRET)return res.status(503).json({error:'Pesapal is not configured yet.'});
+ const auth=req.headers.authorization||'', authToken=auth.startsWith('Bearer ')?auth.slice(7):''; if(!authToken)return res.status(401).json({error:'Authentication required.'});
+ const db=createClient(SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,{auth:{autoRefreshToken:false,persistSession:false}});const {data:u}=await db.auth.getUser(authToken);if(!u?.user)return res.status(401).json({error:'Invalid session.'});
+ const trackingId=String(req.query?.OrderTrackingId||req.query?.trackingId||'');const ref=String(req.query?.OrderMerchantReference||req.query?.merchantReference||'');if(!trackingId&&!ref)return res.status(400).json({error:'Pesapal tracking ID or merchant reference is required.'});
+ const base=PESAPAL_ENV==='live'?LIVE_BASE:SANDBOX_BASE;const token=await getToken(base,PESAPAL_CONSUMER_KEY,PESAPAL_CONSUMER_SECRET);const q=trackingId?`?orderTrackingId=${encodeURIComponent(trackingId)}`:'';let r=await fetch(`${base}/api/Transactions/GetTransactionStatus${q}`,{headers:{Accept:'application/json','Content-Type':'application/json',Authorization:`Bearer ${token}`}});const d=await r.json().catch(()=>({}));if(!r.ok)return res.status(502).json({error:d?.message||'Pesapal status lookup failed.'});
+ let table='orders', record=null; if(ref?.includes('-BR-')){table='build_requests'; const x=await db.from(table).select('*').eq('payment_reference',ref).eq('user_id',u.user.id).maybeSingle();record=x.data;} else {const x=await db.from('orders').select('*').eq('payment_reference',ref).eq('user_id',u.user.id).maybeSingle();record=x.data;}
+ if(!record)return res.status(404).json({error:'BOSS payment record not found.'});
+ const status=String(d.payment_status_description||d.payment_status||'').toUpperCase();const good=status==='COMPLETED'&&Number(d.amount)>=Number(record.price)&&String(d.currency)===String(PESAPAL_CURRENCY);const next=good?{payment_status:'Paid',status:table==='build_requests'?'Build requested':(record.status==='Awaiting payment'?'In progress':record.status),payment_method:'pesapal'}:status==='FAILED'?{payment_status:'Failed'}:status==='REVERSED'?{payment_status:'Reversed'}:{payment_status:'Awaiting payment'};
+ await db.from(table).update({...next,updated_at:new Date().toISOString(),pesapal_tracking_id:trackingId||record.pesapal_tracking_id}).eq('id',record.id);
+ return res.status(200).json({verified:good,recordType:table==='build_requests'?'build_request':'order',recordId:record.id,paymentStatus:next.payment_status,pesapalStatus:status});
+}
