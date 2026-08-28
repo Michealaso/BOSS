@@ -1,17 +1,19 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Bot, LayoutTemplate, UserCircle, ShieldCheck, ChevronDown, LogOut, Settings2 } from 'lucide-react';
+import { Bot, LayoutTemplate, UserCircle, ShieldCheck, ChevronDown, LogOut, Settings2, Menu, X } from 'lucide-react';
 import { getUser, clearUser } from '../lib/store';
 import { signOutRemote, backendMode } from '../lib/backend';
 import { useEffect, useRef, useState } from 'react';
+import BrandIcon from './BrandIcon';
 
 export default function Header() {
   const navigate = useNavigate();
   const [user, setCurrentUser] = useState(getUser());
   const [accountOpen, setAccountOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const accountRef = useRef(null);
 
   useEffect(() => {
-    const sync = () => { setCurrentUser(getUser()); setAccountOpen(false); };
+    const sync = () => { setCurrentUser(getUser()); setAccountOpen(false); setMobileOpen(false); };
     const onPointerDown = (event) => {
       if (accountRef.current && !accountRef.current.contains(event.target)) setAccountOpen(false);
     };
@@ -35,6 +37,7 @@ export default function Header() {
       clearUser();
       setCurrentUser(null);
       setAccountOpen(false);
+      setMobileOpen(false);
       navigate('/');
     }
   }
@@ -43,7 +46,7 @@ export default function Header() {
     <header className="topbar">
       <div className="container topbar-inner">
         <Link className="brand" to="/">
-          <span className="brand-mark"><Bot size={19} /></span>
+          <span className="brand-mark"><BrandIcon size={22} /></span>
           <span>BOSS</span>
         </Link>
 
@@ -54,6 +57,17 @@ export default function Header() {
             </NavLink>
           ))}
         </nav>
+
+
+        <button
+          className="mobile-menu-trigger"
+          type="button"
+          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen(v => !v)}
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
 
         <div className="nav-actions">
           {user ? (
@@ -110,6 +124,23 @@ export default function Header() {
           )}
         </div>
       </div>
+
+      {mobileOpen && (
+        <div className="mobile-menu" role="dialog" aria-label="Mobile navigation">
+          <nav className="mobile-menu-links">
+            {nav.map(({ to, label, icon: Icon }) => (
+              <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'mobile-nav-link active' : 'mobile-nav-link'} onClick={() => setMobileOpen(false)}>
+                <Icon size={17} /> {label}
+              </NavLink>
+            ))}
+            {!user && <Link className="mobile-nav-link" to="/start" onClick={() => setMobileOpen(false)}>Start building</Link>}
+            {!user && <Link className="mobile-nav-link" to="/login" onClick={() => setMobileOpen(false)}><UserCircle size={17} /> Sign in</Link>}
+            {user && user.role !== 'admin' && <Link className="mobile-nav-link" to="/start" onClick={() => setMobileOpen(false)}>Build with BOSS <span aria-hidden="true">→</span></Link>}
+            {user && user.role === 'admin' && <Link className="mobile-nav-link" to="/admin" onClick={() => setMobileOpen(false)}><ShieldCheck size={17} /> Admin dashboard</Link>}
+            {user && <button className="mobile-nav-link danger" type="button" onClick={logout}><LogOut size={17} /> Sign out</button>}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

@@ -22,10 +22,10 @@ The workflow does not require an AI API. The initial build can be template-based
 
 The BOSS wizard now supports two payment paths:
 
-- **Pay once:** a one-time build price. After Pesapal confirms payment, the request moves into production/admin workflow.
-- **Subscribe:** a monthly BOSS plan. Configure a Pesapal Payment Plan ID for Starter, Business and Pro in the environment variables. The first checkout includes the payment plan and Pesapal handles subsequent billing cycles.
+- **Pay once:** a one-time build price. After Flutterwave confirms payment, the request moves into production/admin workflow.
+- **Subscribe:** a monthly BOSS plan. Configure a Flutterwave Payment Plan ID for Starter, Business and Pro in the environment variables. The first checkout includes the payment plan and Flutterwave handles subsequent billing cycles.
 
-Set `FLW_STARTER_PLAN_ID`, `FLW_BUSINESS_PLAN_ID`, and `FLW_PRO_PLAN_ID` to the Payment Plan IDs from your Pesapal account.
+Set `FLW_STARTER_PLAN_ID`, `FLW_BUSINESS_PLAN_ID`, and `FLW_PRO_PLAN_ID` to the Payment Plan IDs from your Flutterwave account.
 
 The app does not expose payment secrets in the browser; checkout creation and verification stay server-side.
 

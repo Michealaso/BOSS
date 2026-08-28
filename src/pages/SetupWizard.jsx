@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Bot, BriefcaseBusiness, Check, CheckCircle2, Globe2, MessageCircle, Palette, ShoppingCart, Sparkles, CalendarDays, Smartphone, Store, Building2, Utensils, Scissors, Car, Home as HomeIcon, Dumbbell, Camera, Rocket, ShieldCheck } from 'lucide-react';
 import { allProducts } from '../data/products';
-import { backendMode, createRemoteBuildRequest, getRemoteUser, startPesapalPayment } from '../lib/backend';
+import { backendMode, createRemoteBuildRequest, getRemoteUser } from '../lib/backend';
 import { getUser, makeId, saveOrder } from '../lib/store';
 
 const STEPS = ['Business', 'Goals', 'Channels', 'Style', 'Plan', 'Details', 'Review'];
@@ -76,6 +76,7 @@ export default function SetupWizard() {
     Boolean(data.style),
     Boolean(data.plan),
     Boolean(data.name.trim() && data.email.trim() && data.phone.trim()),
+    true,
   ][step];
 
   const next = () => { if (!canContinue) return; setStep(s => Math.min(STEPS.length - 1, s + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -147,8 +148,6 @@ export default function SetupWizard() {
           recommendedBotId: recommended.bot?.id || null,
           recommendedBotName: recommended.bot?.name || null
         });
-        navigate(`/build-payment/${id}`);
-        return;
       } else {
         // Keep the local fallback lightweight; Build with BOSS is a request, not a template order.
         saveOrder({ ...base, status: 'Build requested', paymentStatus: 'Not required' });
@@ -168,7 +167,7 @@ export default function SetupWizard() {
 
     <div className="wizard-hero"><div className="eyebrow pill"><Sparkles size={14}/> BOSS Business Setup</div><h1>Tell BOSS what your business needs.</h1><p>Answer a few questions and we’ll recommend the right website, AI assistant and business tools for you.</p></div>
 
-    {submitted && <div className="build-success"><div className="build-success-icon"><CheckCircle2 size={24}/></div><div><div className="eyebrow">Request saved</div><h2>Your BOSS build is ready for payment.</h2><p>Your build request has been saved. Complete payment to send it into the BOSS production queue. Once payment is confirmed, allow about <strong>10 minutes</strong> while we prepare your first build. Your request ID is <strong>{submitted.id}</strong>.</p><div className="hero-actions"><button className="primary-button" onClick={()=>navigate('/dashboard')}>Open my dashboard <ArrowRight size={16}/></button><button className="secondary-button" onClick={()=>setSubmitted(null)}>Start another build</button></div></div></div>}
+    {submitted && <div className="build-success"><div className="build-success-icon"><CheckCircle2 size={24}/></div><div><div className="eyebrow">Request received</div><h2>Your BOSS build is in the queue.</h2><p>Your build request and full brief have been sent to the BOSS admin team. Give us about <strong>10 minutes</strong> while we prepare your first build. Your request ID is <strong>{submitted.id}</strong>.</p><div className="hero-actions"><button className="primary-button" onClick={()=>navigate('/dashboard')}>Open my dashboard <ArrowRight size={16}/></button><button className="secondary-button" onClick={()=>setSubmitted(null)}>Start another build</button></div></div></div>}
 
     <div className="wizard-layout">
       <div className="wizard-main">

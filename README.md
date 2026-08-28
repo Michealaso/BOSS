@@ -1,6 +1,6 @@
 # BOSS — Website + AI Chatbot Marketplace
 
-BOSS is a zero-cost-first React + Vite marketplace for selling ready-made websites and AI chatbot packages. The project now includes production integration points for real accounts, Supabase data, Pesapal checkout/webhooks, AI chatbot serving and automatic static website export.
+BOSS is a zero-cost-first React + Vite marketplace for selling ready-made websites and AI chatbot packages. The project now includes production integration points for real accounts, Supabase data, Flutterwave checkout/webhooks, AI chatbot serving and automatic static website export.
 
 ## Included
 
@@ -11,7 +11,7 @@ BOSS is a zero-cost-first React + Vite marketplace for selling ready-made websit
 - Real Supabase email/password auth when configured
 - Real Supabase orders/projects/messages when configured
 - Role-based admin policies in the SQL schema
-- Pesapal hosted checkout endpoint + webhook verification for UGX
+- Flutterwave hosted checkout endpoint + webhook verification for UGX
 - Public chatbot API endpoint with an optional OpenAI-compatible provider
 - Website HTML export for delivery
 - Chatbot JSON/embed configuration export
@@ -40,9 +40,9 @@ update profiles set role='admin' where id = 'YOUR_AUTH_USER_UUID';
 
 Supabase password auth is used for real sign-in. Supabase sessions persist in the client auth storage. See the official docs for the current `signInWithPassword`, `signUp`, and session APIs.
 
-## Real payments (Pesapal)
+## Real payments (Flutterwave)
 
-The included serverless endpoint keeps the Pesapal secret key off the browser. Set the server environment variables:
+The included serverless endpoint keeps the Flutterwave secret key off the browser. Set the server environment variables:
 
 ```text
 SUPABASE_URL=
@@ -53,13 +53,13 @@ FLW_CURRENCY=USD
 FLW_REDIRECT_URL=https://your-domain.example/order
 ```
 
-Then set the webhook URL in Pesapal to:
+Then set the webhook URL in Flutterwave to:
 
 ```text
 https://your-domain.example/api/flutterwave-webhook
 ```
 
-The checkout endpoint creates the hosted payment link and the webhook re-verifies transaction status, reference, currency and amount before marking an order paid. This follows Pesapal's documented server-side Standard checkout and verification flow.
+The checkout endpoint creates the hosted payment link and the webhook re-verifies transaction status, reference, currency and amount before marking an order paid. This follows Flutterwave's documented server-side Standard checkout and verification flow.
 
 ## AI chatbot
 
@@ -75,7 +75,7 @@ The endpoint expects an OpenAI-compatible chat-completions style JSON response. 
 
 ## Deployment
 
-The repository includes `vercel.json`. Deploy the repository to Vercel, add the browser and server environment variables, then add the Pesapal webhook URL. The current catalog prices are denominated in USD; change both the catalog pricing and `FLW_CURRENCY` together if you want to sell in UGX.
+The repository includes `vercel.json`. Deploy the repository to Vercel, add the browser and server environment variables, then add the Flutterwave webhook URL. The current catalog prices are denominated in USD; change both the catalog pricing and `FLW_CURRENCY` together if you want to sell in UGX.
 
 Real deployment of arbitrary customer websites to a custom domain still requires connecting a hosting/deployment provider and its credentials. BOSS currently provides the ready-to-deliver static HTML export so you can fulfill orders without paying for infrastructure first.
 
@@ -85,7 +85,7 @@ Never put payment provider secret keys or Supabase service-role keys in `VITE_*`
 
 ## What is wired in this release
 - Real Supabase auth state is synchronized across the app.
-- Pesapal return verification is handled server-side at `/api/verify-payment`.
+- Flutterwave return verification is handled server-side at `/api/verify-payment`.
 - Admins can update both fulfillment status and payment status through the protected server endpoint.
 - The customer dashboard can remain the primary order/project workspace.
 
@@ -100,13 +100,13 @@ The new `/start` flow guides a customer through business type, goals, channels, 
 ## Final security notes
 - Customer-created orders are normalized server-side/database-side to the catalog price and cannot mark themselves paid.
 - Admin role changes must be performed through trusted Supabase SQL/server administration.
-- Pesapal webhooks are signature-checked, transaction-verified, and de-duplicated.
-- Recurring subscription charges are matched by the active subscription/customer when Pesapal uses a new transaction reference.
+- Flutterwave webhooks are signature-checked, transaction-verified, and de-duplicated.
+- Recurring subscription charges are matched by the active subscription/customer when Flutterwave uses a new transaction reference.
 
 
 ## Current production hardening
 - BOSS Setup Wizard orders use server-side package pricing (`starter`, `business`, `pro`) so browser-submitted prices cannot change what is charged.
-- Pesapal webhooks accept the current `flutterwave-signature` HMAC flow and the legacy `verif-hash` flow.
+- Flutterwave webhooks accept the current `flutterwave-signature` HMAC flow and the legacy `verif-hash` flow.
 - Admin access is verified server-side against the Supabase profile role.
 
 
