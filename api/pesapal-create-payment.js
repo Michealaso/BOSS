@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const SANDBOX_BASE='https://cybqa.pesapal.com/pesapalv3';
 const LIVE_BASE='https://pay.pesapal.com/v3';
+const BOSS_CURRENCY='USD';
 
 async function getToken(base,key,secret){
   const r=await fetch(`${base}/api/Auth/RequestToken`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({consumer_key:key,consumer_secret:secret})});
@@ -80,7 +81,7 @@ export default async function handler(req,res){
     const callback=PESAPAL_CALLBACK_URL||`${process.env.VITE_SITE_URL||req.headers.origin}/payment/return`;
     const fullName=String(record.name||'Customer').trim().split(/\s+/); const first=fullName.shift()||'Customer'; const last=fullName.join(' ');
     const billingAddress={email_address:record.email,phone_number:record.phone||'',country_code:String(record.country||'UG').slice(0,2).toUpperCase(),first_name:first,middle_name:'',last_name:last,line_1:record.business||record.business_name||'BOSS Customer',line_2:'',city:'',state:'',postal_code:'',zip_code:''};
-    const payload={id:merchantRef,currency:process.env.PESAPAL_CURRENCY||'UGX',amount:Number(record.price||0),description:(record.product_name||record.business_name||'BOSS service').slice(0,100),callback_url:callback,notification_id:PESAPAL_IPN_ID,billing_address:billingAddress};
+    const payload={id:merchantRef,currency:BOSS_CURRENCY,amount:Number(record.price||0),description:(record.product_name||record.business_name||'BOSS service').slice(0,100),callback_url:callback,notification_id:PESAPAL_IPN_ID,billing_address:billingAddress};
     if(record.billing_type==='monthly') payload.account_number=`BOSS-SUB-${record.id}`;
     const r=await fetch(`${base}/api/Transactions/SubmitOrderRequest`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json',Authorization:`Bearer ${pesapalToken}`},body:JSON.stringify(payload)});
     const d=await r.json().catch(()=>({}));
@@ -88,7 +89,7 @@ export default async function handler(req,res){
     const patch={payment_reference:merchantRef,payment_method:'pesapal',payment_status:'Awaiting payment',updated_at:new Date().toISOString(),pesapal_tracking_id:d.order_tracking_id||d.orderTrackingId||null,pesapal_merchant_reference:merchantRef};
     const {error:patchError}=await db.from(table).update(patch).eq('id',record.id).eq('user_id',user.id);
     if(patchError) return res.status(500).json({error:`Payment was created but BOSS could not save the payment reference: ${patchError.message}`});
-    return res.status(200).json({link:d.redirect_url,merchantReference:merchantRef,trackingId:d.order_tracking_id||d.orderTrackingId||null});
+    return res.status(200).json({link:d.redirect_url,merchantReference:merchantRef,trackingId:d.order_tracking_id||d.orderTrackingId||null,currency:BOSS_CURRENCY});
   }catch(error){
     console.error('pesapal-create-payment failed',error);
     return res.status(500).json({error:error?.message||'Unable to create Pesapal payment.'});
