@@ -17,7 +17,7 @@ export default function ProductCard({ product }) {
 
         {isWebsite ? (
           <div className="mock-browser website-preview">
-            <div className="browser-top"><div className="browser-dots"><i/><i/><i/></div><span>{product.name.toLowerCase().replaceAll(' ', '')}.demo</span></div>
+            <div className="browser-top"><div className="browser-dots"><i/><i/><i/></div><span>{product.name.toLowerCase().replaceAll(' ', '')}.site</span></div>
             <div className="browser-content">
               <div className="browser-nav"><b>BRAND</b><span>Services</span><span>About</span><span>Contact</span></div>
               <div className="browser-hero-line"><span/><span/><span/></div>
@@ -50,7 +50,7 @@ export default function ProductCard({ product }) {
         <div className="product-footer">
           <div className="price-block"><span className="price">{money(product.price)}</span><span className="muted small">one-time setup</span></div>
           <div className="card-actions">
-            <Link className="small-button" to={product.demo}><ExternalLink size={14} /> Demo</Link>
+            <Link className="small-button" to={product.demo}><ExternalLink size={14} /> Preview</Link>
             <Link className="primary-button small" to={`/product/${product.type}/${product.id}`}>Get it <ArrowUpRight size={14} /></Link>
           </div>
         </div>
