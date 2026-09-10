@@ -11,7 +11,7 @@ export const websites = [
     colors: ['#ff7a18', '#af002d'],
     delivery: '2–4 business days',
     revisions: '2 revision rounds',
-    demo: '/demo/site/restaurant-pro'
+    preview: '/preview/site/restaurant-pro'
   },
   {
     id: 'business-pro',
@@ -25,7 +25,7 @@ export const websites = [
     colors: ['#334155', '#0f172a'],
     delivery: '2–4 business days',
     revisions: '2 revision rounds',
-    demo: '/demo/site/business-pro'
+    preview: '/preview/site/business-pro'
   },
   {
     id: 'store-pro',
@@ -39,7 +39,7 @@ export const websites = [
     colors: ['#06b6d4', '#2563eb'],
     delivery: '3–5 business days',
     revisions: '2 revision rounds',
-    demo: '/demo/site/store-pro'
+    preview: '/preview/site/store-pro'
   },
   {
     id: 'portfolio-pro',
@@ -53,7 +53,7 @@ export const websites = [
     colors: ['#7c3aed', '#111827'],
     delivery: '1–3 business days',
     revisions: '2 revision rounds',
-    demo: '/demo/site/portfolio-pro'
+    preview: '/preview/site/portfolio-pro'
   }
 ];
 
@@ -69,7 +69,7 @@ export const chatbots = [
     features: ['FAQ answers', 'Lead capture', 'Business hours', 'Escalation prompts', 'Website widget'],
     delivery: '2–3 business days',
     revisions: '1 setup revision',
-    demo: '/demo/bot/support-ai'
+    preview: '/preview/bot/support-ai'
   },
   {
     id: 'booking-ai',
@@ -82,7 +82,7 @@ export const chatbots = [
     features: ['Service selection', 'Customer details', 'Booking intent', 'FAQ support', 'Follow-up CTA'],
     delivery: '2–4 business days',
     revisions: '1 setup revision',
-    demo: '/demo/bot/booking-ai'
+    preview: '/preview/bot/booking-ai'
   },
   {
     id: 'sales-ai',
@@ -95,7 +95,7 @@ export const chatbots = [
     features: ['Product guidance', 'Objection handling', 'Lead capture', 'Offer prompts', 'CTA routing'],
     delivery: '3–5 business days',
     revisions: '1 setup revision',
-    demo: '/demo/bot/sales-ai'
+    preview: '/preview/bot/sales-ai'
   }
 ];
 
