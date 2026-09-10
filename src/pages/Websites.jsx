@@ -18,7 +18,7 @@ export default function Websites() {
 
   return <section className="container page-section">
     <div className="page-heading marketplace-heading">
-      <div><div className="eyebrow"><LayoutTemplate size={14}/> Marketplace</div><h1>Business websites</h1><p>Ready-made designs you can demo, customize, and order.</p></div>
+      <div><div className="eyebrow"><LayoutTemplate size={14}/> Marketplace</div><h1>Business websites</h1><p>Ready-made designs you can explore, customize, and order.</p></div>
       <Link className="ghost-button" to="/chatbots"><SlidersHorizontal size={16}/> Pair with a chatbot</Link>
     </div>
 
@@ -30,7 +30,7 @@ export default function Websites() {
       </div>
     </div>
 
-    <div className="marketplace-count"><span>{filtered.length} website{filtered.length !== 1 ? 's' : ''}</span><span>Live demos included</span></div>
+    <div className="marketplace-count"><span>{filtered.length} website{filtered.length !== 1 ? 's' : ''}</span><span>Interactive previews included</span></div>
     <div className="product-grid">{filtered.map((p) => <ProductCard key={p.id} product={p}/>)}</div>
     {!filtered.length && <div className="empty-state"><h3>No websites found.</h3><p>Try another search or category.</p><button className="secondary-button" onClick={() => { setQuery(''); setCategory('All'); }}>Clear filters</button></div>}
 
