@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Bot, Check, Globe, MessageSquareText, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { websites, chatbots } from '../data/products';
+import { websites } from '../data/products';
 
 export default function Home() {
   return (
@@ -26,7 +26,7 @@ export default function Home() {
               <div className="showcase-badge">NEW • AI-READY</div>
               <h3>Your business, online.</h3>
               <p>A clean landing page with a built-in assistant.</p>
-              <div className="showcase-actions"><b>Start now</b><span>View details →</span></div>
+              <div className="showcase-actions"><Link to="/start">Start now</Link><Link to="/websites">View details →</Link></div>
               <div className="showcase-grid"><span/><span/><span/><span/></div>
             </div>
           </div>
