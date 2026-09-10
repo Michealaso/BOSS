@@ -25,7 +25,7 @@ export default function Chatbots() {
       <div className="filter-row"><select value={sort} onChange={(e) => setSort(e.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option></select></div>
     </div>
 
-    <div className="marketplace-count"><span>{filtered.length} chatbot{filtered.length !== 1 ? 's' : ''}</span><span>Try the live demo before ordering</span></div>
+    <div className="marketplace-count"><span>{filtered.length} chatbot{filtered.length !== 1 ? 's' : ''}</span><span>Try it live before ordering</span></div>
     <div className="product-grid">{filtered.map((p) => <ProductCard key={p.id} product={p}/>)}</div>
     {!filtered.length && <div className="empty-state"><h3>No chatbots found.</h3><p>Try another search.</p><button className="secondary-button" onClick={() => setQuery('')}>Clear search</button></div>}
 
