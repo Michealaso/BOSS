@@ -43,10 +43,14 @@ export default function Builder() {
     const code = `<script src="https://boss.example/widget.js" data-boss-project="${projectId}"></script>`;
     try { await navigator.clipboard.writeText(code); setSaved(true); setTimeout(() => setSaved(false), 1600); } catch {}
   }
+  const whatsapp = String(data.whatsapp || '').replace(/\D/g,'');
+  const phone = String(data.phone || '').trim();
+  const previewContact = whatsapp ? `https://wa.me/${whatsapp}` : phone ? `tel:${phone}` : '/dashboard';
+  const previewExternal = Boolean(whatsapp);
 
   return <section className="container page-section">
     <Link className="back-link" to="/dashboard"><ArrowLeft size={15}/> Back to dashboard</Link>
-    <div className="page-heading"><div><div className="eyebrow"><Sparkles size={14}/> BOSS Studio</div><h1>{type === 'website' ? 'Customize your website.' : 'Train your chatbot.'}</h1><p>Make changes, save them, then preview or publish the project.</p></div><div className="builder-actions"><button className="secondary-button" onClick={save}><Save size={16}/> {saved ? 'Saved' : 'Save changes'}</button><button className="primary-button" onClick={publish}><Globe2 size={16}/> Publish</button><button className="small-button" onClick={exportProject}><Download size={14}/> Export</button></div></div>
+    <div className="page-heading"><div><div className="eyebrow"><Sparkles size={14}/> BOSS Studio</div><h1>{type === 'website' ? 'Customize your website.' : 'Train your chatbot.'}</h1><p>Make changes, save them, then preview or publish the project.</p></div><div className="builder-actions"><button type="button" className="secondary-button" onClick={save}><Save size={16}/> {saved ? 'Saved' : 'Save changes'}</button><button type="button" className="primary-button" onClick={publish}><Globe2 size={16}/> Publish</button><button type="button" className="small-button" onClick={exportProject}><Download size={14}/> Export</button></div></div>
     <div className="builder-layout">
       <div className="form-card">
         {type === 'website' ? <>
@@ -63,15 +67,15 @@ export default function Builder() {
           <label>Bot name<input value={data.botName} onChange={e => set('botName', e.target.value)}/></label>
           <label>Welcome message<textarea rows="3" value={data.welcome} onChange={e => set('welcome', e.target.value)}/></label>
           <label>Tone<select value={data.tone} onChange={e => set('tone', e.target.value)}><option>Friendly</option><option>Professional</option><option>Short & direct</option><option>Sales-focused</option></select></label>
-          <div className="builder-row-head"><h3 className="builder-subhead"><MessageSquareText size={17}/> Knowledge base</h3><button className="small-button" onClick={() => set('faqs', [...data.faqs, {q:'New question',a:'New answer'}])}>Add FAQ</button></div>
+          <div className="builder-row-head"><h3 className="builder-subhead"><MessageSquareText size={17}/> Knowledge base</h3><button type="button" className="small-button" onClick={() => set('faqs', [...data.faqs, {q:'New question',a:'New answer'}])}>Add FAQ</button></div>
           <div className="faq-editor">{data.faqs.map((faq, i) => <div className="faq-edit" key={i}><input value={faq.q} onChange={e => { const faqs=[...data.faqs]; faqs[i]={...faqs[i],q:e.target.value}; set('faqs',faqs); }}/><textarea rows="2" value={faq.a} onChange={e => { const faqs=[...data.faqs]; faqs[i]={...faqs[i],a:e.target.value}; set('faqs',faqs); }}/></div>)}</div>
-          <div className="embed-card"><div><strong>Website embed</strong><p>Copy this snippet when you connect the real chatbot backend.</p></div><button className="small-button" onClick={copyEmbed}><Copy size={14}/> Copy code</button></div>
+          <div className="embed-card"><div><strong>Website embed</strong><p>Copy this snippet when you connect the real chatbot backend.</p></div><button type="button" className="small-button" onClick={copyEmbed}><Copy size={14}/> Copy code</button></div>
         </>}
       </div>
       <div className="studio-preview">
         <div className="studio-head"><span>Live preview</span><span className="status status-completed">● Ready</span></div>
-        {type === 'website' ? <div className="website-studio" style={{'--accent': data.primary}}><div className="studio-nav"><strong>{data.business}</strong><span>Services</span><span>About</span><span>Contact</span></div><div className="studio-hero"><div className="eyebrow">BOSS POWERED</div><h2>{data.tagline}</h2><p>{data.location} · {data.phone}</p><button style={{background:data.primary}}>{data.cta}</button></div><div className="studio-cards">{(data.sections || []).slice(0,3).map(x => <div key={x}><strong>{x}</strong><p>Professional section ready for your content.</p></div>)}</div></div> : <div className="bot-window studio-bot"><div className="chat-header"><div className="bot-avatar"><Bot size={18}/></div><div><strong>{data.botName}</strong><span>Online · {data.tone}</span></div></div><div className="bot-messages"><div className="chat-msg bot">{data.welcome}</div>{data.faqs.slice(0,3).map((faq,i)=><div key={i} className="chat-msg user">{faq.q}</div>)}</div><div className="chat-compose"><span>Type a message...</span><button type="button" title="Chat preview"><MessageSquareText size={15}/></button></div></div>}
-        <div className="studio-foot"><Link className="small-button" to={product.preview}><ExternalLink size={14}/> Live preview</Link><button className="small-button" onClick={publish}><CheckCircle2 size={14}/> Publish project</button></div>
+        {type === 'website' ? <div className="website-studio" style={{'--accent': data.primary}}><div className="studio-nav"><strong>{data.business}</strong><span>Services</span><span>About</span><span>Contact</span></div><div className="studio-hero"><div className="eyebrow">BOSS POWERED</div><h2>{data.tagline}</h2><p>{data.location} · {data.phone}</p><button type="button" style={{background:data.primary}} onClick={()=>{window.location.href=previewContact}}>{data.cta}</button></div><div className="studio-cards">{(data.sections || []).slice(0,3).map(x => <div key={x}><strong>{x}</strong><p>Professional section ready for your content.</p></div>)}</div></div> : <div className="bot-window studio-bot"><div className="chat-header"><div className="bot-avatar"><Bot size={18}/></div><div><strong>{data.botName}</strong><span>Online · {data.tone}</span></div></div><div className="bot-messages"><div className="chat-msg bot">{data.welcome}</div>{data.faqs.slice(0,3).map((faq,i)=><div key={i} className="chat-msg user">{faq.q}</div>)}</div><div className="chat-compose"><span>Type a message...</span></div></div>}
+        <div className="studio-foot"><Link className="small-button" to={product.preview}><ExternalLink size={14}/> Live preview</Link><button type="button" className="small-button" onClick={publish}><CheckCircle2 size={14}/> Publish project</button></div>
       </div>
     </div>
   </section>;
