@@ -34,7 +34,6 @@ export async function signUpWithPassword(email, password, profile={}) {
   }
 }
 
-
 export async function resetPasswordForEmail(email) {
   if (!supabase) throw new Error(getSupabaseConfigIssue() || 'Supabase is not configured.');
   try {
@@ -146,23 +145,16 @@ export async function updateRemoteBuildRequest(id, patch) {
 export async function listRemoteOrders(userId, options = {}) {
   if (!supabase || !userId) return [];
   if (options.admin) {
-    // Primary path: the authenticated admin session reads the orders table directly.
-    // This keeps the dashboard working even when the optional RPC migration has not
-    // been applied yet, while RLS still enforces the admin-only read policy.
     const direct = await supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500);
     if (!direct.error && direct.data?.length) return direct.data;
     if (direct.error) console.warn('BOSS admin direct order query failed:', direct.error.message);
-
-    // Secondary path: use the security-definer admin RPC when the direct query is
-    // blocked by an older/partial RLS installation.
     let rpc = await supabase.rpc('admin_get_build_queue');
     if (rpc.error) rpc = await supabase.rpc('admin_list_orders');
     if (!rpc.error) return rpc.data || [];
-
     const reason = rpc.error?.message || direct.error?.message || 'No orders could be loaded.';
     throw new Error(`Admin order loading failed: ${reason}. Run supabase/admin-build-request-fix.sql in your BOSS Supabase project, then refresh the dashboard.`);
   }
-  const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500);
+  const { data, error } = await supabase.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(500);
   if (error) throw error;
   return data || [];
 }
@@ -212,14 +204,24 @@ export async function updateRemoteOrder(id, patch) {
 }
 export async function listRemoteProjects(userId) {
   if (!supabase || !userId) return [];
-  const { data, error } = await supabase.from('projects').select('*').order('updated_at', { ascending: false });
+  const { data, error } = await supabase.from('projects').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
   if (error) throw error;
   return data || [];
 }
 export async function getRemoteProject(id, productId=null) {
   if (!supabase) return null;
-  if (id) { const { data, error } = await supabase.from('projects').select('*').eq('id', id).maybeSingle(); if (error) throw error; if (data) return data; }
-  if (productId) { const { data, error } = await supabase.from('projects').select('*').eq('product_id', productId).order('updated_at',{ascending:false}).limit(1).maybeSingle(); if(error)throw error; return data; }
+  const user = await getRemoteUser();
+  if (!user) return null;
+  if (id) {
+    const { data, error } = await supabase.from('projects').select('*').eq('id', id).eq('user_id', user.id).maybeSingle();
+    if (error) throw error;
+    if (data) return data;
+  }
+  if (productId) {
+    const { data, error } = await supabase.from('projects').select('*').eq('product_id', productId).eq('user_id', user.id).order('updated_at',{ascending:false}).limit(1).maybeSingle();
+    if(error) throw error;
+    return data;
+  }
   return null;
 }
 export async function saveRemoteProject(project) {
