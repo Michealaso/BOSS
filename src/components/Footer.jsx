@@ -15,13 +15,13 @@ export default function Footer() {
           <Link to="/dashboard">Customer dashboard</Link>
         </div>
         <div>
-          <div className="footer-title">Demo</div>
-          <span>Local MVP mode</span>
-          <span>No paid services required</span>
-          <span>Ready for backend integration</span>
+          <div className="footer-title">Why BOSS</div>
+          <span>Mobile-ready builds</span>
+          <span>Fast setup and delivery</span>
+          <span>Secure online payments</span>
         </div>
       </div>
-      <div className="container footer-bottom">© 2026 BOSS MVP · Built as a launch-ready starter.</div>
+      <div className="container footer-bottom">© 2026 BOSS · Built for practical business launches.</div>
     </footer>
   );
 }
