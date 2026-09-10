@@ -1,84 +1,78 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Check, Clock3, ExternalLink, PackageCheck, Search, ShieldCheck, X } from 'lucide-react';
+import { BarChart3, Check, Clock3, ExternalLink, FileText, PackageCheck, RefreshCw, Search, ShieldCheck, ShoppingBag, UserRound, WalletCards, X } from 'lucide-react';
 import { getUser, setUser } from '../lib/store';
-import { backendMode, getRemoteProfile, getRemoteUser, listRemoteBuildRequests, updateRemoteBuildRequest, toLocalUser } from '../lib/backend';
+import { backendMode, getRemoteProfile, getRemoteUser, listRemoteBuildRequests, listRemoteOrders, updateRemoteBuildRequest, updateRemoteOrder, toLocalUser } from '../lib/backend';
+import './DashboardUI.css';
+
+const niceDate = (value) => value ? new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+const niceDateTime = (value) => value ? new Date(value).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+const statusClass = (value) => String(value || '').toLowerCase().replace(/\s+/g, '-');
 
 function mapRequest(x) {
-  return {
-    id: x.id,
-    name: x.name || '', email: x.email || '', phone: x.phone || '',
-    business: x.business_name || '', businessType: x.business_type || '', country: x.country || '',
-    goals: Array.isArray(x.goals) ? x.goals : [], channels: Array.isArray(x.channels) ? x.channels : [],
-    style: x.style || '', plan: x.plan || '', notes: x.notes || '',
-    recommendedWebsiteName: x.recommended_website_name || '', recommendedBotName: x.recommended_bot_name || '',
-    status: x.status || 'Build requested', adminMessage: x.admin_message || '',
-    deliveryUrl: x.delivery_url || '', deliveryMessage: x.delivery_message || '',
-    createdAt: x.created_at, updatedAt: x.updated_at
-  };
+  return { id:x.id,name:x.name||'',email:x.email||'',phone:x.phone||'',business:x.business_name||'',businessType:x.business_type||'',country:x.country||'',goals:Array.isArray(x.goals)?x.goals:[],channels:Array.isArray(x.channels)?x.channels:[],style:x.style||'',plan:x.plan||'',notes:x.notes||'',recommendedWebsiteName:x.recommended_website_name||'',recommendedBotName:x.recommended_bot_name||'',status:x.status||'Build requested',paymentStatus:x.payment_status||'Awaiting payment',deliveryUrl:x.delivery_url||'',deliveryMessage:x.delivery_message||'',adminMessage:x.admin_message||'',createdAt:x.created_at };
 }
+function mapOrder(x) { return { id:x.id, productId:x.product_id, productName:x.product_id||'BOSS service', name:x.name||'',email:x.email||'',business:x.business||'Business',price:x.price,paymentStatus:x.payment_status||'Pending',status:x.status||'New',createdAt:x.created_at,deliveryUrl:x.delivery_url||'',deliveryMessage:x.delivery_message||'' }; }
 
 export default function Admin() {
-  const localUser = getUser();
-  const [user, setLocalUser] = useState(localUser);
-  const [requests, setRequests] = useState([]);
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState('All');
-  const [loading, setLoading] = useState(backendMode === 'supabase');
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
+  const localUser=getUser();
+  const [user,setLocalUser]=useState(localUser);
+  const [requests,setRequests]=useState([]);
+  const [orders,setOrders]=useState([]);
+  const [tab,setTab]=useState('requests');
+  const [query,setQuery]=useState('');
+  const [filter,setFilter]=useState('All');
+  const [loading,setLoading]=useState(backendMode==='supabase');
+  const [refreshing,setRefreshing]=useState(false);
+  const [error,setError]=useState('');
 
-  const refresh = async () => {
-    if (backendMode !== 'supabase') return;
-    const remote = await getRemoteUser();
-    if (!remote) return;
-    setRefreshing(true); setError('');
-    try {
-      const rows = await listRemoteBuildRequests(remote.id, { admin: true });
-      setRequests(rows.map(mapRequest));
-    } catch (e) {
-      console.error('BOSS build request load failed', e);
-      setError(e.message || 'Could not load build requests.');
-    } finally { setRefreshing(false); setLoading(false); }
+  const refresh=async()=>{
+    if(backendMode!=='supabase'){setLoading(false);return;}
+    const remote=await getRemoteUser(); if(!remote){setLoading(false);return;}
+    setRefreshing(true);setError('');
+    try{
+      const [buildRows,orderRows]=await Promise.all([listRemoteBuildRequests(remote.id,{admin:true}),listRemoteOrders(remote.id,{admin:true})]);
+      setRequests(buildRows.map(mapRequest));
+      setOrders(orderRows.map(mapOrder));
+    }catch(e){console.error('BOSS admin refresh failed',e);setError(e.message||'Could not refresh admin data.');}
+    finally{setRefreshing(false);setLoading(false);}
   };
-
-  useEffect(() => {
+  useEffect(()=>{
     let timer;
-    (async () => {
-      if (backendMode !== 'supabase') { setLoading(false); return; }
-      const remote = await getRemoteUser();
-      if (!remote) { setLoading(false); return; }
-      const profile = await getRemoteProfile(remote.id);
-      if (profile?.role !== 'admin') { setLoading(false); return; }
-      const mapped = toLocalUser(remote, profile); setLocalUser(mapped); setUser(mapped);
-      await refresh();
-      timer = setInterval(refresh, 5000);
-    })().catch(e => { console.error(e); setError(e.message || 'Admin verification failed.'); setLoading(false); });
-    return () => clearInterval(timer);
-  }, []);
+    (async()=>{
+      if(backendMode!=='supabase'){setLoading(false);return;}
+      const remote=await getRemoteUser(); if(!remote){setLoading(false);return;}
+      const profile=await getRemoteProfile(remote.id); if(profile?.role!=='admin'){setLoading(false);return;}
+      const mapped=toLocalUser(remote,profile);setLocalUser(mapped);setUser(mapped);await refresh();timer=setInterval(refresh,10000);
+    })().catch(e=>{console.error(e);setError(e.message||'Admin verification failed.');setLoading(false);});
+    return()=>clearInterval(timer);
+  },[]);
 
-  const filtered = useMemo(() => requests.filter(r => (filter === 'All' || r.status === filter) &&
-    [r.id, r.business, r.name, r.email, r.phone, r.businessType, r.plan].join(' ').toLowerCase().includes(query.toLowerCase())), [requests, query, filter]);
+  const filteredRequests=useMemo(()=>requests.filter(r=>(filter==='All'||r.status===filter)&&[r.id,r.business,r.name,r.email,r.phone,r.businessType,r.country,r.plan].join(' ').toLowerCase().includes(query.toLowerCase())),[requests,query,filter]);
+  const filteredOrders=useMemo(()=>orders.filter(o=>(filter==='All'||o.status===filter||o.paymentStatus===filter)&&[o.id,o.business,o.name,o.email,o.productName,o.paymentStatus,o.status].join(' ').toLowerCase().includes(query.toLowerCase())),[orders,query,filter]);
+  const activeRequests=requests.filter(r=>!['Completed','Cancelled'].includes(r.status)).length;
+  const pendingPayments=[...requests.filter(r=>r.paymentStatus!=='Paid'),...orders.filter(o=>o.paymentStatus!=='Paid')].length;
+  const completedRequests=requests.filter(r=>r.status==='Completed').length;
 
-  async function change(id, patch) {
-    try {
-      if (backendMode === 'supabase') {
-        const updated = await updateRemoteBuildRequest(id, patch);
-        setRequests(prev => prev.map(r => r.id === id ? mapRequest(updated) : r));
-        return;
-      }
-      setRequests(prev => prev.map(r => r.id === id ? { ...r, ...patch } : r));
-    } catch (e) { alert(e.message || 'Admin update failed.'); }
-  }
+  async function updateRequest(id,patch){try{if(backendMode==='supabase'){const row=await updateRemoteBuildRequest(id,patch);setRequests(prev=>prev.map(r=>r.id===id?mapRequest(row):r));}else setRequests(prev=>prev.map(r=>r.id===id?{...r,...patch}:r));}catch(e){alert(e.message||'Could not update build request.');}}
+  async function updateOrder(id,patch){try{if(backendMode==='supabase'){const row=await updateRemoteOrder(id,patch);setOrders(prev=>prev.map(o=>o.id===id?mapOrder(row):o));}else setOrders(prev=>prev.map(o=>o.id===id?{...o,...patch}:o));}catch(e){alert(e.message||'Could not update order.');}}
 
-  if (backendMode === 'supabase' && loading) return <section className="container page-section narrow"><div className="auth-card"><div className="eyebrow">Checking access</div><h1>Verifying admin access.</h1><p>Please wait while BOSS checks your secure account role.</p></div></section>;
-  if (backendMode === 'supabase' && (!user || user.role !== 'admin')) return <Navigate to="/login" replace />;
+  if(backendMode==='supabase'&&loading)return <section className="container page-section boss-dash"><div className="boss-loading"><div className="boss-dash-card"><ShieldCheck size={22}/><h2>Securing admin workspace…</h2><p>Checking access and loading your operational data.</p></div></div></section>;
+  if(backendMode==='supabase'&&(!user||user.role!=='admin'))return <Navigate to="/login" replace/>;
 
-  return <section className="container page-section">
-    <div className="page-heading"><div><div className="eyebrow"><ShieldCheck size={14}/> Private admin</div><h1>BOSS build control room.</h1><p>Build requests submitted through “Build with BOSS” appear here with the customer's full brief.</p></div><div className="admin-key"><span>Signed in as</span><strong>{user?.email}</strong></div></div>
-    <div className="stats-grid"><div><PackageCheck/><span>Total build requests</span><strong>{requests.length}</strong></div><div><Clock3/><span>Active</span><strong>{requests.filter(r=>r.status!=='Completed').length}</strong></div><div><ShieldCheck/><span>Requested</span><strong>{requests.filter(r=>r.status==='Build requested').length}</strong></div><div><Check/><span>Completed</span><strong>{requests.filter(r=>r.status==='Completed').length}</strong></div></div>
-    <div className="admin-toolbar"><label className="search-box"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search build requests…"/></label><select value={filter} onChange={e=>setFilter(e.target.value)}><option>All</option><option>Build requested</option><option>In progress</option><option>Completed</option><option>Cancelled</option></select><button className="small-button" onClick={refresh} disabled={refreshing}>{refreshing ? 'Refreshing…' : 'Refresh requests'}</button></div>
-    {error && <div className="admin-error" role="alert">{error}</div>}
-    <div className="table-card"><div className="table-head"><h3>BOSS build requests</h3><span>{filtered.length} shown</span></div>{filtered.length ? <div className="order-list">{filtered.map(r => <article className="admin-row" key={r.id}><div className="admin-order"><strong>{r.business || 'Unnamed business'}</strong><span>{r.name} · {r.email} · {r.phone}</span><small>{r.id} · {r.plan || 'No plan'} · {r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}</small><div className="admin-brief"><strong>Customer brief</strong><small>Business type: {r.businessType || '—'}</small><small>Country / market: {r.country || '—'}</small><small>Goals: {r.goals.join(', ') || '—'}</small><small>Tools: {r.channels.join(', ') || '—'}</small><small>Style: {r.style || '—'}</small><small>Recommended website: {r.recommendedWebsiteName || '—'}</small><small>Recommended chatbot: {r.recommendedBotName || '—'}</small><small>Notes: {r.notes || '—'}</small></div><label className="admin-inline-field"><span>Admin message</span><textarea rows="2" value={r.adminMessage} onChange={e=>setRequests(prev=>prev.map(x=>x.id===r.id?{...x,adminMessage:e.target.value}:x))} placeholder="Message for the customer…"/></label><label className="admin-inline-field"><span>Delivery URL</span><input value={r.deliveryUrl} onChange={e=>setRequests(prev=>prev.map(x=>x.id===r.id?{...x,deliveryUrl:e.target.value}:x))} placeholder="https://…"/></label><label className="admin-inline-field"><span>Delivery message</span><textarea rows="2" value={r.deliveryMessage} onChange={e=>setRequests(prev=>prev.map(x=>x.id===r.id?{...x,deliveryMessage:e.target.value}:x))} placeholder="Tell the customer what is ready…"/></label><button className="small-button" onClick={()=>change(r.id,{adminMessage:r.adminMessage,deliveryUrl:r.deliveryUrl,deliveryMessage:r.deliveryMessage})}>Save build details</button>{r.deliveryUrl && <small>Delivery: <a className="text-link" href={r.deliveryUrl} target="_blank" rel="noreferrer">Open delivered build <ExternalLink size={12}/></a></small>}</div><div className="admin-controls"><select value={r.status} onChange={e=>change(r.id,{status:e.target.value})}><option>Build requested</option><option>In progress</option><option>Completed</option><option>Cancelled</option></select><button className="icon-button subtle" title="Mark complete" onClick={()=>change(r.id,{status:'Completed'})}><Check size={16}/></button><button className="icon-button subtle" title="Reset" onClick={()=>change(r.id,{status:'Build requested'})}><X size={16}/></button></div></article>)}</div> : <div className="empty-state">No build requests found.</div>}</div>
+  return <section className="container page-section boss-dash boss-dash-admin">
+    <div className="boss-dash-shell">
+      <header className="boss-dash-hero"><div><div className="boss-dash-eyebrow"><ShieldCheck size={14}/> BOSS operations</div><h1>Admin workspace.</h1><p>Control build requests, orders, payments and deliveries from one focused workspace.</p></div><div className="boss-dash-hero-actions"><button className="secondary-button" onClick={refresh} disabled={refreshing}><RefreshCw size={15}/> {refreshing?'Refreshing…':'Refresh data'}</button></div></header>
+      {error&&<div className="boss-error" role="alert">{error}</div>}
+      <div className="boss-admin-kpis"><div className="boss-admin-kpi"><div className="boss-admin-kpi-top"><div className="boss-admin-kpi-icon"><FileText size={16}/></div></div><span>Total build requests</span><strong>{requests.length}</strong></div><div className="boss-admin-kpi"><div className="boss-admin-kpi-top"><div className="boss-admin-kpi-icon"><Clock3 size={16}/></div></div><span>Active builds</span><strong>{activeRequests}</strong></div><div className="boss-admin-kpi"><div className="boss-admin-kpi-top"><div className="boss-admin-kpi-icon"><ShoppingBag size={16}/></div></div><span>Orders</span><strong>{orders.length}</strong></div><div className="boss-admin-kpi"><div className="boss-admin-kpi-top"><div className="boss-admin-kpi-icon"><WalletCards size={16}/></div></div><span>Pending payments</span><strong>{pendingPayments}</strong></div></div>
+
+      <div className="boss-dash-card"><div className="boss-dash-card-head"><div><h2>Control center</h2><p>Find a customer record quickly and take action without leaving the page.</p></div><span className="boss-dash-sync">Signed in as {user?.email}</span></div><div className="boss-dash-card-body"><div className="boss-admin-toolbar"><div className="boss-admin-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search customer, business, ID or email…"/></div><select value={filter} onChange={e=>setFilter(e.target.value)}><option>All</option>{tab==='requests'?<><option>Build requested</option><option>In progress</option><option>Completed</option><option>Cancelled</option><option>Paid</option><option>Awaiting payment</option></>:<><option>New</option><option>In progress</option><option>Completed</option><option>Cancelled</option><option>Paid</option><option>Pending</option><option>Failed</option></>}</select><div className="boss-admin-tabs"><button className={tab==='requests'?'boss-admin-tab active':'boss-admin-tab'} onClick={()=>{setTab('requests');setFilter('All')}}>Build requests ({requests.length})</button><button className={tab==='orders'?'boss-admin-tab active':'boss-admin-tab'} onClick={()=>{setTab('orders');setFilter('All')}}>Orders ({orders.length})</button></div></div></div></div>
+
+      {tab==='requests'&&<div className="boss-dash-card"><div className="boss-dash-card-head"><div><h2>Build queue</h2><p>Full customer briefs, status, payment and delivery.</p></div><span className="boss-dash-sync">{completedRequests} completed</span></div><div className="boss-dash-card-body">{filteredRequests.length?<div>{filteredRequests.map(r=><article className="boss-admin-request" key={r.id}><div className="boss-admin-request-main"><h3>{r.business||'Unnamed business'}</h3><span>{r.name} · {r.email} · {r.phone} · submitted {niceDateTime(r.createdAt)}</span><div className="boss-admin-brief"><div className="boss-admin-field"><label>Business</label><span>{r.businessType||'—'} · {r.country||'—'}</span></div><div className="boss-admin-field"><label>Plan</label><span>{r.plan||'Custom'} · {r.paymentStatus}</span></div><div className="boss-admin-field"><label>Goals</label><span>{r.goals.join(', ')||'—'}</span></div><div className="boss-admin-field"><label>Tools</label><span>{r.channels.join(', ')||'—'}</span></div><div className="boss-admin-field"><label>Style</label><span>{r.style||'—'}</span></div><div className="boss-admin-field"><label>Recommended</label><span>{[r.recommendedWebsiteName,r.recommendedBotName].filter(Boolean).join(' + ')||'—'}</span></div><div className="boss-admin-field" style={{gridColumn:'1 / -1'}}><label>Notes</label><span>{r.notes||'—'}</span></div></div><div className="boss-admin-editor"><label>Admin message<input value={r.adminMessage} onChange={e=>setRequests(prev=>prev.map(x=>x.id===r.id?{...x,adminMessage:e.target.value}:x))} placeholder="Message for the customer…"/></label><label>Delivery URL<input value={r.deliveryUrl} onChange={e=>setRequests(prev=>prev.map(x=>x.id===r.id?{...x,deliveryUrl:e.target.value}:x))} placeholder="https://…"/></label><label>Delivery message<textarea rows="2" value={r.deliveryMessage} onChange={e=>setRequests(prev=>prev.map(x=>x.id===r.id?{...x,deliveryMessage:e.target.value}:x))} placeholder="Tell the customer what is ready…"/></label></div></div><div className="boss-admin-controls"><span className={`boss-dash-status ${statusClass(r.status)}`}>{r.status}</span><select value={r.status} onChange={e=>updateRequest(r.id,{status:e.target.value})}><option>Build requested</option><option>In progress</option><option>Completed</option><option>Cancelled</option></select><button className="small-button" onClick={()=>updateRequest(r.id,{adminMessage:r.adminMessage,deliveryUrl:r.deliveryUrl,deliveryMessage:r.deliveryMessage})}>Save changes</button>{r.deliveryUrl&&<a className="small-button" href={r.deliveryUrl} target="_blank" rel="noreferrer"><ExternalLink size={13}/> Open delivery</a>}{r.paymentStatus!=='Paid'&&<span className="boss-dash-status pending">{r.paymentStatus}</span>}{r.paymentStatus==='Paid'&&<span className="boss-dash-status paid">Paid</span>}<div className="boss-dash-row-actions"><button className="icon-button subtle" title="Mark complete" onClick={()=>updateRequest(r.id,{status:'Completed'})}><Check size={15}/></button><button className="icon-button subtle" title="Reset to requested" onClick={()=>updateRequest(r.id,{status:'Build requested'})}><X size={15}/></button></div></div></article>)}</div>:<div className="boss-dash-empty"><FileText size={20}/><h3>No build requests found.</h3><p>New Build with BOSS submissions will appear here automatically.</p></div>}</div></div>}
+
+      {tab==='orders'&&<div className="boss-dash-card"><div className="boss-dash-card-head"><div><h2>Customer orders</h2><p>Monitor order status and payment state.</p></div><span className="boss-dash-sync">Operational view</span></div><div className="boss-dash-card-body">{filteredOrders.length?<div className="boss-dash-list">{filteredOrders.map(o=><article className="boss-admin-order" key={o.id}><div className="boss-admin-order-main"><strong>{o.productName}</strong><span>{o.business} · {o.name} · {o.email} · {niceDateTime(o.createdAt)}</span><div className="boss-admin-order-meta"><span className={`boss-dash-status ${statusClass(o.status)}`}>{o.status}</span><span className={`boss-dash-status ${statusClass(o.paymentStatus)}`}>{o.paymentStatus}</span>{o.price!=null&&<span className="boss-dash-status">${o.price}</span>}</div></div><div className="boss-admin-order-actions"><select value={o.status} onChange={e=>updateOrder(o.id,{status:e.target.value})}><option>New</option><option>In progress</option><option>Completed</option><option>Cancelled</option></select><select value={o.paymentStatus} onChange={e=>updateOrder(o.id,{payment_status:e.target.value})}><option>Pending</option><option>Awaiting payment</option><option>Paid</option><option>Failed</option><option>Reversed</option></select>{o.deliveryUrl&&<a className="small-button" href={o.deliveryUrl} target="_blank" rel="noreferrer"><ExternalLink size={13}/> Delivery</a>}</div></article>)}</div>:<div className="boss-dash-empty"><ShoppingBag size={20}/><h3>No orders found.</h3><p>Customer template orders will appear here.</p></div>}</div></div>}
+
+      <div className="boss-dash-card"><div className="boss-dash-card-head"><div><h2>Admin priorities</h2><p>Useful signals for today's workload.</p></div></div><div className="boss-dash-card-body"><div className="boss-dash-actions"><div className="boss-dash-action"><div className="boss-dash-action-icon"><Clock3 size={16}/></div><div><strong>{activeRequests} active build{activeRequests===1?'':'s'}</strong><span>Keep these moving through the build queue.</span></div></div><div className="boss-dash-action"><div className="boss-dash-action-icon"><WalletCards size={16}/></div><div><strong>{pendingPayments} pending payment{pendingPayments===1?'':'s'}</strong><span>Review checkout state before starting paid production work.</span></div></div><div className="boss-dash-action"><div className="boss-dash-action-icon"><Check size={16}/></div><div><strong>{completedRequests} completed build{completedRequests===1?'':'s'}</strong><span>Completed builds remain visible for customer delivery tracking.</span></div></div><div className="boss-dash-action"><div className="boss-dash-action-icon"><UserRound size={16}/></div><div><strong>Customer-first delivery</strong><span>Keep the admin message and delivery URL updated so customers always know the next step.</span></div></div></div></div></div>
+    </div>
   </section>;
 }
