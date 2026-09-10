@@ -15,7 +15,7 @@ export default function Home() {
             <Link className="primary-button large" to="/start">Start building <ArrowRight size={17}/></Link>
             <Link className="secondary-button large" to="/websites">Browse ready-made sites <Globe size={17}/></Link>
           </div>
-          <div className="trust-row"><span><Check size={15}/> Mobile-ready</span><span><Check size={15}/> Fast demos</span><span><Check size={15}/> Start small</span></div>
+          <div className="trust-row"><span><Check size={15}/> Mobile-ready</span><span><Check size={15}/> Instant previews</span><span><Check size={15}/> Start small</span></div>
         </div>
         <div className="hero-visual">
           <div className="hero-glow" />
@@ -41,7 +41,7 @@ export default function Home() {
 
       <section className="dark-section">
         <div className="container split-section">
-          <div><div className="eyebrow light">Add an AI layer</div><h2>Turn visitors into conversations.</h2><p>Give every business a simple assistant that can answer common questions, route customers, and collect leads.</p><div className="check-list"><div><Check/> FAQ answers</div><div><Check/> Lead capture</div><div><Check/> Booking and sales flows</div></div><Link className="secondary-button light-button" to="/chatbots">See chatbot demos <ArrowRight size={16}/></Link></div>
+          <div><div className="eyebrow light">Add an AI layer</div><h2>Turn visitors into conversations.</h2><p>Give every business a simple assistant that can answer common questions, route customers, and collect leads.</p><div className="check-list"><div><Check/> FAQ answers</div><div><Check/> Lead capture</div><div><Check/> Booking and sales flows</div></div><Link className="secondary-button light-button" to="/chatbots">Explore chatbots <ArrowRight size={16}/></Link></div>
           <div className="chat-preview"><div className="chat-header"><span className="status-dot"/> BOSS Assistant <small>Online</small></div><div className="chat-msg bot">Hi! 👋 What would you like help with today?</div><div className="chat-msg user">I want to book a table.</div><div className="chat-msg bot">Sure. What day and how many people?</div><div className="chat-input">Type a message… <span>Send</span></div></div>
         </div>
       </section>
