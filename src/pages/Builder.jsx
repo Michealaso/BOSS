@@ -31,11 +31,11 @@ export default function Builder() {
   const projectId = existing?.id || remoteExisting?.id || `PROJECT-${id}`;
   const set = (key, value) => setData(prev => ({ ...prev, [key]: value }));
   const save = async () => {
-    const payload={ id: projectId, productId: id, type, ownerEmail: user?.email || 'demo@boss.local', productName: product.name, data, live:false };
+    const payload={ id: projectId, productId: id, type, ownerEmail: user?.email || '', productName: product.name, data, live:false };
     try { if (backendMode === 'supabase') await saveRemoteProject(payload); else saveProject(payload); setSaved(true); setTimeout(() => setSaved(false), 1800); } catch(err){ alert(err.message || 'Save failed.'); }
   };
   const publish = async () => {
-    const payload={ id: projectId, productId: id, type, ownerEmail: user?.email || 'demo@boss.local', productName: product.name, data, live:true };
+    const payload={ id: projectId, productId: id, type, ownerEmail: user?.email || '', productName: product.name, data, live:true };
     try { if (backendMode === 'supabase') await saveRemoteProject(payload); else saveProject(payload); navigate(`/published/${encodeURIComponent(projectId)}`); } catch(err){ alert(err.message || 'Publish failed.'); }
   };
   const exportProject = () => { if(type==='website') downloadText(`${data.business || 'boss-site'}.html`, websiteHtml({id:projectId, data}),'text/html'); else downloadText(`${data.botName || 'boss-chatbot'}.json`, chatbotExport({id:projectId, productName:product.name, data}),'application/json'); };
@@ -70,8 +70,8 @@ export default function Builder() {
       </div>
       <div className="studio-preview">
         <div className="studio-head"><span>Live preview</span><span className="status status-completed">● Ready</span></div>
-        {type === 'website' ? <div className="website-studio" style={{'--accent': data.primary}}><div className="studio-nav"><strong>{data.business}</strong><span>Services</span><span>About</span><span>Contact</span></div><div className="studio-hero"><div className="eyebrow">BOSS POWERED</div><h2>{data.tagline}</h2><p>{data.location} · {data.phone}</p><button style={{background:data.primary}}>{data.cta}</button></div><div className="studio-cards">{(data.sections || []).slice(0,3).map(x => <div key={x}><strong>{x}</strong><p>Professional section ready for your content.</p></div>)}</div></div> : <div className="bot-window studio-bot"><div className="chat-header"><div className="bot-avatar"><Bot size={18}/></div><div><strong>{data.botName}</strong><span>Online · {data.tone}</span></div></div><div className="bot-messages"><div className="chat-msg bot">{data.welcome}</div>{data.faqs.slice(0,3).map((faq,i)=><div key={i} className="chat-msg user">{faq.q}</div>)}</div><div className="chat-compose"><span>Type a message...</span><button><MessageSquareText size={15}/></button></div></div>}
-        <div className="studio-foot"><Link className="small-button" to={`/demo/${type === 'website' ? 'site' : 'bot'}/${product.id}`}><ExternalLink size={14}/> Original demo</Link><button className="small-button" onClick={publish}><CheckCircle2 size={14}/> Publish project</button></div>
+        {type === 'website' ? <div className="website-studio" style={{'--accent': data.primary}}><div className="studio-nav"><strong>{data.business}</strong><span>Services</span><span>About</span><span>Contact</span></div><div className="studio-hero"><div className="eyebrow">BOSS POWERED</div><h2>{data.tagline}</h2><p>{data.location} · {data.phone}</p><button style={{background:data.primary}}>{data.cta}</button></div><div className="studio-cards">{(data.sections || []).slice(0,3).map(x => <div key={x}><strong>{x}</strong><p>Professional section ready for your content.</p></div>)}</div></div> : <div className="bot-window studio-bot"><div className="chat-header"><div className="bot-avatar"><Bot size={18}/></div><div><strong>{data.botName}</strong><span>Online · {data.tone}</span></div></div><div className="bot-messages"><div className="chat-msg bot">{data.welcome}</div>{data.faqs.slice(0,3).map((faq,i)=><div key={i} className="chat-msg user">{faq.q}</div>)}</div><div className="chat-compose"><span>Type a message...</span><button type="button" title="Chat preview"><MessageSquareText size={15}/></button></div></div>}
+        <div className="studio-foot"><Link className="small-button" to={product.preview}><ExternalLink size={14}/> Live preview</Link><button className="small-button" onClick={publish}><CheckCircle2 size={14}/> Publish project</button></div>
       </div>
     </div>
   </section>;
