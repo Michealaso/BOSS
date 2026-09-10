@@ -103,9 +103,9 @@ export default function Login() {
     <section className="container page-section narrow">
       <div className="auth-card">
         <div className="auth-logo">{recovery ? <KeyRound /> : <LockKeyhole />}</div>
-        <div className="eyebrow">{recovery ? 'Password recovery' : backendMode === 'supabase' ? 'Secure account' : 'Local demo mode'}</div>
+        <div className="eyebrow">{recovery ? 'Password recovery' : backendMode === 'supabase' ? 'Secure account' : 'Local mode'}</div>
         <h1>{recovery ? 'Choose a new password.' : mode === 'signin' ? 'Sign in to BOSS.' : 'Create your BOSS account.'}</h1>
-        <p>{recovery ? 'Set a new password for your BOSS account.' : backendMode === 'supabase' ? 'Use your real account credentials.' : 'This local fallback is for interface testing.'}</p>
+        <p>{recovery ? 'Set a new password for your BOSS account.' : backendMode === 'supabase' ? 'Use your real account credentials.' : 'Local account mode is for interface testing.'}</p>
 
         <form onSubmit={submit}>
           {recovery ? (
@@ -130,7 +130,7 @@ export default function Login() {
           <button type="button" className="forgot-link" onClick={forgotPassword} disabled={busy}>Forgot password?</button>
         )}
         {!recovery && (
-          <button className="text-link as-button" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setNotice(''); }}>
+          <button type="button" className="text-link as-button" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setNotice(''); }}>
             {mode === 'signin' ? 'Create an account' : 'Already have an account? Sign in'}
           </button>
         )}
