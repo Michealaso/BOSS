@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Bot, LayoutTemplate, UserCircle, ShieldCheck, ChevronDown, LogOut, Settings2, Menu, X } from 'lucide-react';
+import { Bot, LayoutTemplate, UserCircle, ShieldCheck, ChevronDown, LogOut, Settings2, Menu, X, ArrowRight } from 'lucide-react';
 import { getUser, clearUser } from '../lib/store';
 import { signOutRemote, backendMode } from '../lib/backend';
 import { useEffect, useRef, useState } from 'react';
@@ -27,7 +27,7 @@ export default function Header() {
 
   const nav = [
     { to: '/websites', label: 'Websites', icon: LayoutTemplate },
-    { to: '/chatbots', label: 'Chatbots', icon: Bot },
+    { to: '/chatbots', label: 'AI assistants', icon: Bot },
   ];
 
   async function logout() {
@@ -42,15 +42,17 @@ export default function Header() {
     }
   }
 
+  const closeMobile = () => setMobileOpen(false);
+
   return (
     <header className="topbar">
       <div className="container topbar-inner">
-        <Link className="brand" to="/">
+        <Link className="brand" to="/" onClick={closeMobile} aria-label="BOSS home">
           <span className="brand-mark"><BrandIcon size={22} /></span>
           <span>BOSS</span>
         </Link>
 
-        <nav className="nav-links">
+        <nav className="nav-links" aria-label="Primary navigation">
           {nav.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <Icon size={16} /> {label}
@@ -58,26 +60,15 @@ export default function Header() {
           ))}
         </nav>
 
-
-        <button
-          className="mobile-menu-trigger"
-          type="button"
-          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
-          aria-expanded={mobileOpen}
-          onClick={() => setMobileOpen(v => !v)}
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-
         <div className="nav-actions">
           {user ? (
             <>
               {user.role === 'admin' ? (
-                <Link className="ghost-button compact admin-nav-badge" to="/admin">
-                  <ShieldCheck size={16} /> Admin
+                <Link className="ghost-button compact" to="/admin">
+                  <ShieldCheck size={16} /> Admin workspace
                 </Link>
               ) : (
-                <Link className="ghost-button compact" to="/start">Build with BOSS <span aria-hidden="true">→</span></Link>
+                <Link className="ghost-button compact" to="/start">Build with BOSS <ArrowRight size={15}/></Link>
               )}
 
               <div className="account-menu" ref={accountRef}>
@@ -102,11 +93,11 @@ export default function Header() {
                     <div className="account-menu-divider" />
                     {user.role === 'admin' ? (
                       <Link className="account-menu-item" to="/admin" onClick={() => setAccountOpen(false)}>
-                        <ShieldCheck size={16} /> Admin dashboard
+                        <ShieldCheck size={16} /> Admin workspace
                       </Link>
                     ) : (
                       <Link className="account-menu-item" to="/dashboard" onClick={() => setAccountOpen(false)}>
-                        <Settings2 size={16} /> My account
+                        <Settings2 size={16} /> My dashboard
                       </Link>
                     )}
                     <button className="account-menu-item danger" type="button" onClick={logout}>
@@ -118,25 +109,37 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Link className="ghost-button compact" to="/start">Start building</Link>
+              <Link className="ghost-button compact" to="/websites">Explore</Link>
               <Link className="ghost-button compact" to="/login"><UserCircle size={17} /> Sign in</Link>
+              <Link className="primary-button compact" to="/start">Start building <ArrowRight size={15}/></Link>
             </>
           )}
         </div>
+
+        <button
+          className="mobile-menu-trigger"
+          type="button"
+          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen(v => !v)}
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
 
       {mobileOpen && (
         <div className="mobile-menu" role="dialog" aria-label="Mobile navigation">
           <nav className="mobile-menu-links">
             {nav.map(({ to, label, icon: Icon }) => (
-              <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'mobile-nav-link active' : 'mobile-nav-link'} onClick={() => setMobileOpen(false)}>
+              <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'mobile-nav-link active' : 'mobile-nav-link'} onClick={closeMobile}>
                 <Icon size={17} /> {label}
               </NavLink>
             ))}
-            {!user && <Link className="mobile-nav-link" to="/start" onClick={() => setMobileOpen(false)}>Start building</Link>}
-            {!user && <Link className="mobile-nav-link" to="/login" onClick={() => setMobileOpen(false)}><UserCircle size={17} /> Sign in</Link>}
-            {user && user.role !== 'admin' && <Link className="mobile-nav-link" to="/start" onClick={() => setMobileOpen(false)}>Build with BOSS <span aria-hidden="true">→</span></Link>}
-            {user && user.role === 'admin' && <Link className="mobile-nav-link" to="/admin" onClick={() => setMobileOpen(false)}><ShieldCheck size={17} /> Admin dashboard</Link>}
+            {!user && <Link className="mobile-nav-link" to="/websites" onClick={closeMobile}>Explore websites</Link>}
+            {!user && <Link className="mobile-nav-link" to="/start" onClick={closeMobile}>Start building <ArrowRight size={15}/></Link>}
+            {!user && <Link className="mobile-nav-link" to="/login" onClick={closeMobile}><UserCircle size={17} /> Sign in</Link>}
+            {user && user.role !== 'admin' && <Link className="mobile-nav-link" to="/start" onClick={closeMobile}>Build with BOSS <ArrowRight size={15}/></Link>}
+            {user && user.role === 'admin' && <Link className="mobile-nav-link" to="/admin" onClick={closeMobile}><ShieldCheck size={17} /> Admin workspace</Link>}
             {user && <button className="mobile-nav-link danger" type="button" onClick={logout}><LogOut size={17} /> Sign out</button>}
           </nav>
         </div>
