@@ -5,6 +5,7 @@ import App from './App';
 import './styles.css';
 import './visual-polish.css';
 import './boss-premium.css';
+import './template-images.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
