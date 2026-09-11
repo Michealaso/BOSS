@@ -94,6 +94,21 @@ tr:last-child td{border-bottom:0}
 /* Consistent focus accessibility */
 :focus-visible{outline:3px solid rgba(99,102,241,.28);outline-offset:2px}
 
+/* Signed-in account: show only a perfect colored circle + one initial. */
+.account-trigger.account-trigger-avatar{width:42px;height:42px;min-width:42px;min-height:42px;padding:0;margin:0;border:0;border-radius:50%;background:transparent;box-shadow:none;display:grid;place-items:center}
+.account-trigger.account-trigger-avatar:hover{transform:translateY(-1px);background:transparent;box-shadow:none}
+.account-trigger.account-trigger-avatar:focus-visible{outline:3px solid rgba(91,92,226,.24);outline-offset:3px}
+.account-trigger.account-trigger-avatar .account-letter-avatar{width:42px;height:42px;min-width:42px;min-height:42px;border-radius:50%;display:grid;place-items:center;overflow:hidden;color:#fff;font-size:15px;font-weight:900;line-height:1;text-transform:uppercase;letter-spacing:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.24),0 8px 18px rgba(15,23,42,.14)}
+.account-letter-avatar.large{width:48px;height:48px;min-width:48px;min-height:48px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:16px;font-weight:900;line-height:1}
+.account-letter-avatar.plum{background:linear-gradient(145deg,#7c3aed,#a855f7)!important}
+.account-letter-avatar.blue{background:linear-gradient(145deg,#2563eb,#06b6d4)!important}
+.account-letter-avatar.emerald{background:linear-gradient(145deg,#059669,#14b8a6)!important}
+.account-letter-avatar.amber{background:linear-gradient(145deg,#d97706,#f59e0b)!important}
+.account-letter-avatar.rose{background:linear-gradient(145deg,#e11d48,#f43f5e)!important}
+.account-letter-avatar.cyan{background:linear-gradient(145deg,#0891b2,#22d3ee)!important}
+.account-letter-avatar.violet{background:linear-gradient(145deg,#4f46e5,#8b5cf6)!important}
+.account-menu-profile .account-letter-avatar{flex:none}
+
 @media (max-width:900px){
   .container{width:min(100% - 28px,720px)}
   .topbar-inner{height:64px}
@@ -137,4 +152,6 @@ tr:last-child td{border-bottom:0}
   .form-card{padding:20px}
   .success-card{padding:44px 20px;margin:32px 0}
   .success-card h1,.auth-card h1{font-size:36px}
+  .account-trigger.account-trigger-avatar{width:40px;height:40px;min-width:40px;min-height:40px}
+  .account-trigger.account-trigger-avatar .account-letter-avatar{width:40px;height:40px;min-width:40px;min-height:40px;font-size:14px}
 }
