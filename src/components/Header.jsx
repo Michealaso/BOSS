@@ -6,8 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import BrandIcon from './BrandIcon';
 
 function initial(name = '') {
-  const first = name.trim().charAt(0);
-  return (first || 'B').toUpperCase();
+  return (name.trim().charAt(0) || 'B').toUpperCase();
 }
 
 function avatarTone(name = '') {
