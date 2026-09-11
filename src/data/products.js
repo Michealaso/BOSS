@@ -2,13 +2,18 @@ export const websites = [
   {
     id: 'restaurant-pro',
     type: 'website',
-    name: 'Restaurant Pro',
+    name: 'Restaurant',
     category: 'Restaurant',
     price: 79,
     badge: 'Popular',
-    description: 'A conversion-focused restaurant site with menu, reservations and WhatsApp ordering.',
+    description: 'A polished restaurant site built around food, reservations, location and direct customer action.',
     features: ['Responsive design', 'Digital menu', 'WhatsApp CTA', 'Booking form', 'Google Maps section'],
-    colors: ['#ff7a18', '#af002d'],
+    colors: ['#7f1d1d', '#1c1917'],
+    images: [
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=85',
+      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=1200&q=85'
+    ],
     delivery: '2–4 business days',
     revisions: '2 revision rounds',
     preview: '/preview/site/restaurant-pro'
@@ -16,13 +21,18 @@ export const websites = [
   {
     id: 'business-pro',
     type: 'website',
-    name: 'Business Pro',
+    name: 'Business',
     category: 'Business',
     price: 99,
     badge: 'Best value',
-    description: 'Clean company website for service businesses, agencies and growing brands.',
+    description: 'A credible business website with real-world imagery, clear services, proof and contact paths.',
     features: ['5-page structure', 'Lead capture', 'Services section', 'Testimonials', 'Contact form'],
-    colors: ['#334155', '#0f172a'],
+    colors: ['#0f172a', '#334155'],
+    images: [
+      'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1600&q=85',
+      'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=85'
+    ],
     delivery: '2–4 business days',
     revisions: '2 revision rounds',
     preview: '/preview/site/business-pro'
@@ -30,13 +40,18 @@ export const websites = [
   {
     id: 'store-pro',
     type: 'website',
-    name: 'Store Pro',
+    name: 'Store',
     category: 'E-commerce',
     price: 149,
     badge: 'New',
-    description: 'Modern storefront starter with product cards, cart preview and direct ordering.',
+    description: 'A visual storefront that puts products, collections, shopping and ordering front and centre.',
     features: ['Product catalog', 'Cart preview', 'Order CTA', 'Categories', 'Mobile-first'],
-    colors: ['#06b6d4', '#2563eb'],
+    colors: ['#0f766e', '#164e63'],
+    images: [
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=85',
+      'https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=85'
+    ],
     delivery: '3–5 business days',
     revisions: '2 revision rounds',
     preview: '/preview/site/store-pro'
@@ -44,13 +59,18 @@ export const websites = [
   {
     id: 'portfolio-pro',
     type: 'website',
-    name: 'Portfolio Pro',
+    name: 'Portfolio',
     category: 'Portfolio',
     price: 59,
     badge: '',
-    description: 'Minimal portfolio for creators, freelancers, photographers and developers.',
+    description: 'A visual portfolio for creators, freelancers, photographers and developers who need the work to lead.',
     features: ['Project gallery', 'About section', 'Testimonials', 'Contact CTA', 'Fast layout'],
-    colors: ['#7c3aed', '#111827'],
+    colors: ['#4c1d95', '#111827'],
+    images: [
+      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=85',
+      'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=85',
+      'https://images.unsplash.com/photo-1545235617-9465d2a55698?auto=format&fit=crop&w=1200&q=85'
+    ],
     delivery: '1–3 business days',
     revisions: '2 revision rounds',
     preview: '/preview/site/portfolio-pro'
