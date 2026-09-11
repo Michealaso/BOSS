@@ -1,9 +1,15 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Bot, LayoutTemplate, UserCircle, ShieldCheck, ChevronDown, LogOut, Settings2, Menu, X, ArrowRight } from 'lucide-react';
+import { Bot, LayoutTemplate, UserCircle, ShieldCheck, ChevronDown, LogOut, Settings2, Menu, X, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { getUser, clearUser } from '../lib/store';
 import { signOutRemote, backendMode } from '../lib/backend';
 import { useEffect, useRef, useState } from 'react';
 import BrandIcon from './BrandIcon';
+
+function initials(name = '') {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'B';
+  return parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
+}
 
 export default function Header() {
   const navigate = useNavigate();
@@ -43,6 +49,8 @@ export default function Header() {
   }
 
   const closeMobile = () => setMobileOpen(false);
+  const displayName = user?.name || 'My account';
+  const isAdmin = user?.role === 'admin';
 
   return (
     <header className="topbar">
@@ -63,7 +71,7 @@ export default function Header() {
         <div className="nav-actions">
           {user ? (
             <>
-              {user.role === 'admin' ? (
+              {isAdmin ? (
                 <Link className="ghost-button compact" to="/admin">
                   <ShieldCheck size={16} /> Admin workspace
                 </Link>
@@ -73,25 +81,32 @@ export default function Header() {
 
               <div className="account-menu" ref={accountRef}>
                 <button className="account-trigger" type="button" aria-expanded={accountOpen} aria-haspopup="menu" onClick={() => setAccountOpen(v => !v)}>
-                  <span className="account-avatar"><UserCircle size={19} /></span>
+                  <span className="account-status-avatar" aria-hidden="true">
+                    <span>{initials(displayName)}</span>
+                    <span className="account-online-dot" />
+                  </span>
                   <span className="account-trigger-copy">
-                    <strong>{user.name || 'My account'}</strong>
-                    <small>{user.role === 'admin' ? 'Administrator' : 'Customer'}</small>
+                    <strong>{displayName}</strong>
+                    <small>{isAdmin ? 'Admin workspace' : 'BOSS account'}</small>
                   </span>
                   <ChevronDown className={accountOpen ? 'account-chevron open' : 'account-chevron'} size={16} />
                 </button>
 
                 {accountOpen && (
                   <div className="account-menu-panel" role="menu">
-                    <div className="account-menu-head">
-                      <span className="account-avatar large"><UserCircle size={20} /></span>
+                    <div className="account-menu-head account-menu-profile">
+                      <span className="account-status-avatar large" aria-hidden="true">
+                        <span>{initials(displayName)}</span>
+                        <span className="account-online-dot" />
+                      </span>
                       <div>
-                        <strong>{user.name || 'My account'}</strong>
+                        <strong>{displayName}</strong>
                         <small>{user.email}</small>
+                        <span className="account-signed-badge"><CheckCircle2 size={12} /> Signed in</span>
                       </div>
                     </div>
                     <div className="account-menu-divider" />
-                    {user.role === 'admin' ? (
+                    {isAdmin ? (
                       <Link className="account-menu-item" to="/admin" onClick={() => setAccountOpen(false)}>
                         <ShieldCheck size={16} /> Admin workspace
                       </Link>
@@ -138,8 +153,8 @@ export default function Header() {
             {!user && <Link className="mobile-nav-link" to="/websites" onClick={closeMobile}>Explore websites</Link>}
             {!user && <Link className="mobile-nav-link" to="/start" onClick={closeMobile}>Start building <ArrowRight size={15}/></Link>}
             {!user && <Link className="mobile-nav-link" to="/login" onClick={closeMobile}><UserCircle size={17} /> Sign in</Link>}
-            {user && user.role !== 'admin' && <Link className="mobile-nav-link" to="/start" onClick={closeMobile}>Build with BOSS <ArrowRight size={15}/></Link>}
-            {user && user.role === 'admin' && <Link className="mobile-nav-link" to="/admin" onClick={closeMobile}><ShieldCheck size={17} /> Admin workspace</Link>}
+            {user && !isAdmin && <Link className="mobile-nav-link" to="/start" onClick={closeMobile}>Build with BOSS <ArrowRight size={15}/></Link>}
+            {user && isAdmin && <Link className="mobile-nav-link" to="/admin" onClick={closeMobile}><ShieldCheck size={17} /> Admin workspace</Link>}
             {user && <button className="mobile-nav-link danger" type="button" onClick={logout}><LogOut size={17} /> Sign out</button>}
           </nav>
         </div>
