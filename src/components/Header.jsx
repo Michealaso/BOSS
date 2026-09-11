@@ -1,14 +1,20 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Bot, LayoutTemplate, UserCircle, ShieldCheck, ChevronDown, LogOut, Settings2, Menu, X, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Bot, LayoutTemplate, ShieldCheck, ChevronDown, LogOut, Settings2, Menu, X, ArrowRight } from 'lucide-react';
 import { getUser, clearUser } from '../lib/store';
 import { signOutRemote, backendMode } from '../lib/backend';
 import { useEffect, useRef, useState } from 'react';
 import BrandIcon from './BrandIcon';
 
-function initials(name = '') {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return 'B';
-  return parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
+function initial(name = '') {
+  const first = name.trim().charAt(0);
+  return (first || 'B').toUpperCase();
+}
+
+function avatarTone(name = '') {
+  const palette = ['plum', 'blue', 'emerald', 'amber', 'rose', 'cyan', 'violet'];
+  let score = 0;
+  for (let i = 0; i < name.length; i += 1) score = (score * 31 + name.charCodeAt(i)) >>> 0;
+  return palette[score % palette.length];
 }
 
 export default function Header() {
@@ -49,8 +55,9 @@ export default function Header() {
   }
 
   const closeMobile = () => setMobileOpen(false);
-  const displayName = user?.name || 'My account';
   const isAdmin = user?.role === 'admin';
+  const displayName = user?.name || 'My account';
+  const tone = avatarTone(user?.email || displayName);
 
   return (
     <header className="topbar">
@@ -80,29 +87,24 @@ export default function Header() {
               )}
 
               <div className="account-menu" ref={accountRef}>
-                <button className="account-trigger" type="button" aria-expanded={accountOpen} aria-haspopup="menu" onClick={() => setAccountOpen(v => !v)}>
-                  <span className="account-status-avatar" aria-hidden="true">
-                    <span>{initials(displayName)}</span>
-                    <span className="account-online-dot" />
-                  </span>
-                  <span className="account-trigger-copy">
-                    <strong>{displayName}</strong>
-                    <small>{isAdmin ? 'Admin workspace' : 'BOSS account'}</small>
-                  </span>
-                  <ChevronDown className={accountOpen ? 'account-chevron open' : 'account-chevron'} size={16} />
+                <button
+                  className="account-trigger account-trigger-avatar"
+                  type="button"
+                  aria-label="Open account menu"
+                  aria-expanded={accountOpen}
+                  aria-haspopup="menu"
+                  onClick={() => setAccountOpen(v => !v)}
+                >
+                  <span className={`account-letter-avatar ${tone}`} aria-hidden="true">{initial(displayName)}</span>
                 </button>
 
                 {accountOpen && (
                   <div className="account-menu-panel" role="menu">
                     <div className="account-menu-head account-menu-profile">
-                      <span className="account-status-avatar large" aria-hidden="true">
-                        <span>{initials(displayName)}</span>
-                        <span className="account-online-dot" />
-                      </span>
+                      <span className={`account-letter-avatar large ${tone}`} aria-hidden="true">{initial(displayName)}</span>
                       <div>
                         <strong>{displayName}</strong>
                         <small>{user.email}</small>
-                        <span className="account-signed-badge"><CheckCircle2 size={12} /> Signed in</span>
                       </div>
                     </div>
                     <div className="account-menu-divider" />
@@ -125,7 +127,7 @@ export default function Header() {
           ) : (
             <>
               <Link className="ghost-button compact" to="/websites">Explore</Link>
-              <Link className="ghost-button compact" to="/login"><UserCircle size={17} /> Sign in</Link>
+              <Link className="ghost-button compact" to="/login">Sign in</Link>
               <Link className="primary-button compact" to="/start">Start building <ArrowRight size={15}/></Link>
             </>
           )}
@@ -152,7 +154,7 @@ export default function Header() {
             ))}
             {!user && <Link className="mobile-nav-link" to="/websites" onClick={closeMobile}>Explore websites</Link>}
             {!user && <Link className="mobile-nav-link" to="/start" onClick={closeMobile}>Start building <ArrowRight size={15}/></Link>}
-            {!user && <Link className="mobile-nav-link" to="/login" onClick={closeMobile}><UserCircle size={17} /> Sign in</Link>}
+            {!user && <Link className="mobile-nav-link" to="/login" onClick={closeMobile}>Sign in</Link>}
             {user && !isAdmin && <Link className="mobile-nav-link" to="/start" onClick={closeMobile}>Build with BOSS <ArrowRight size={15}/></Link>}
             {user && isAdmin && <Link className="mobile-nav-link" to="/admin" onClick={closeMobile}><ShieldCheck size={17} /> Admin workspace</Link>}
             {user && <button className="mobile-nav-link danger" type="button" onClick={logout}><LogOut size={17} /> Sign out</button>}
