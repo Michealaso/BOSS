@@ -50,7 +50,7 @@ export default function Login() {
           ? await signUpWithPassword(email, password, { name })
           : await signInWithPassword(email, password);
         if (!data?.session) {
-          setNotice('Account created. Check your email if Supabase email confirmation is enabled.');
+          setNotice('Account created. Check your email to finish setting up your account.');
           return;
         }
         const profile = await getRemoteProfile(data.user.id);
@@ -81,7 +81,7 @@ export default function Login() {
     setError('');
     setNotice('');
     if (backendMode !== 'supabase') {
-      setError('Password reset is available after Supabase authentication is connected.');
+      setError('Password reset is currently unavailable.');
       return;
     }
     if (!email.trim()) {
@@ -91,51 +91,66 @@ export default function Login() {
     setBusy(true);
     try {
       await resetPasswordForEmail(email.trim());
-      setNotice('Password reset instructions were sent. Check your email.');
-    } catch (err) {
-      setError(err.message || 'Unable to send reset instructions.');
+      setNotice('If an account matches that email, password reset instructions have been sent.');
+    } catch {
+      setNotice('If an account matches that email, password reset instructions have been sent.');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <section className="container page-section narrow">
-      <div className="auth-card">
-        <div className="auth-logo">{recovery ? <KeyRound /> : <LockKeyhole />}</div>
-        <div className="eyebrow">{recovery ? 'Password recovery' : backendMode === 'supabase' ? 'Secure account' : 'Local mode'}</div>
-        <h1>{recovery ? 'Choose a new password.' : mode === 'signin' ? 'Sign in to BOSS.' : 'Create your BOSS account.'}</h1>
-        <p>{recovery ? 'Set a new password for your BOSS account.' : backendMode === 'supabase' ? 'Use your real account credentials.' : 'Local account mode is for interface testing.'}</p>
+    <section className="container page-section auth-page">
+      <div className="auth-layout">
+        <div className="auth-intro">
+          <div className="auth-kicker"><span className="auth-kicker-dot" /> Your BOSS workspace</div>
+          <h1>{recovery ? 'Set a new password and get back to work.' : mode === 'signin' ? 'Welcome back.' : 'Start your BOSS workspace.'}</h1>
+          <p>{recovery ? 'Choose a new password for your account.' : mode === 'signin' ? 'Sign in to manage your builds, orders and business projects.' : 'Create your account and keep your business setup in one place.'}</p>
+          <div className="auth-points">
+            <span><ShieldCheck size={16} /> Secure account access</span>
+            <span><ShieldCheck size={16} /> Your workspace stays yours</span>
+          </div>
+        </div>
 
-        <form onSubmit={submit}>
-          {recovery ? (
-            <label>New password<input required minLength="6" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" /></label>
-          ) : (
-            <>
-              {mode === 'signup' && <label>Name<input required value={name} onChange={e => setName(e.target.value)} placeholder="Your name" /></label>}
-              <label>Email<input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" /></label>
-              {backendMode === 'supabase' && <label>Password<input required minLength="6" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" /></label>}
-            </>
+        <div className="auth-card">
+          <div className="auth-card-top">
+            <div className="auth-logo">{recovery ? <KeyRound /> : <LockKeyhole />}</div>
+            <div>
+              <div className="eyebrow">{recovery ? 'Password recovery' : mode === 'signin' ? 'Sign in' : 'Create account'}</div>
+              <h2>{recovery ? 'Create a new password' : mode === 'signin' ? 'Access your account' : 'Create your account'}</h2>
+            </div>
+          </div>
+
+          <form onSubmit={submit}>
+            {recovery ? (
+              <label>New password<input required minLength="6" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Enter a new password" autoComplete="new-password" /></label>
+            ) : (
+              <>
+                {mode === 'signup' && <label>Name<input required value={name} onChange={e => setName(e.target.value)} placeholder="Your name" autoComplete="name" /></label>}
+                <label>Email<input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" /></label>
+                <label>Password<input required minLength="6" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} /></label>
+              </>
+            )}
+            <button className="primary-button large full auth-submit" type="submit" disabled={busy}>
+              {busy ? 'Please wait…' : recovery ? 'Update password' : mode === 'signin' ? 'Sign in' : 'Create account'}
+              {!busy && <ArrowRight size={17} />}
+            </button>
+          </form>
+
+          {error && <div className="error-box" role="alert">{error}</div>}
+          {notice && <div className="success-box" role="status"><MailCheck size={16} />{notice}</div>}
+
+          {!recovery && mode === 'signin' && (
+            <button type="button" className="forgot-link" onClick={forgotPassword} disabled={busy}>Forgot password?</button>
           )}
-          <button className="primary-button large full" type="submit" disabled={busy}>
-            {busy ? 'Please wait…' : recovery ? 'Update password' : mode === 'signin' ? 'Continue' : 'Create account'}
-            {!busy && <ArrowRight size={17} />}
-          </button>
-        </form>
-
-        {error && <div className="error-box">{error}</div>}
-        {notice && <div className="success-box"><MailCheck size={16} />{notice}</div>}
-
-        {!recovery && mode === 'signin' && backendMode === 'supabase' && (
-          <button type="button" className="forgot-link" onClick={forgotPassword} disabled={busy}>Forgot password?</button>
-        )}
-        {!recovery && (
-          <button type="button" className="text-link as-button" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setNotice(''); }}>
-            {mode === 'signin' ? 'Create an account' : 'Already have an account? Sign in'}
-          </button>
-        )}
-        <div className="small-note"><ShieldCheck size={15} /> {backendMode === 'supabase' ? 'Real Supabase authentication is enabled.' : 'Local mode is for interface testing only.'}</div>
-        <Link className="text-link" to="/">Back to homepage</Link>
+          {!recovery && (
+            <button type="button" className="text-link as-button auth-switch" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setNotice(''); }}>
+              {mode === 'signin' ? 'Create an account' : 'Already have an account? Sign in'}
+            </button>
+          )}
+          <div className="auth-assurance"><ShieldCheck size={15} /> Protected account access</div>
+          <Link className="text-link" to="/">Back to homepage</Link>
+        </div>
       </div>
     </section>
   );
