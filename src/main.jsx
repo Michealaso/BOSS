@@ -7,6 +7,7 @@ import './visual-polish.css';
 import './boss-premium.css';
 import './template-images.css';
 import './classy.css';
+import './wizard-fix.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
