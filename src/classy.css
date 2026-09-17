@@ -86,60 +86,32 @@ td,th{border-bottom-color:#edeae4!important}
 .boss-admin-search input,.boss-admin-toolbar select,.boss-admin-controls select{background:#fff!important;border-color:#dfddd7!important}
 .footer{margin-top:88px!important}
 
-/* Build wizard progress: remove every connector/line so numbers and labels remain unobstructed. */
-.wizard-page .wizard-topbar,
-.wizard-page .wizard-progress,
-.wizard-page .wizard-step{
-  text-decoration:none!important;
-  border-top:0!important;
-  border-bottom:0!important;
-  background-image:none!important;
-}
-.wizard-page .wizard-progress{
-  position:relative!important;
-  isolation:isolate!important;
+/* Build wizard progress: restore the connector, but place it only across the circle row so it never cuts through step labels. */
+.wizard-page .wizard-topbar{position:relative!important}
+.wizard-page .wizard-progress{position:relative!important;isolation:isolate!important;display:flex!important;align-items:flex-start!important}
+.wizard-page .wizard-progress::before{
+  content:""!important;
+  position:absolute!important;
+  left:24px!important;
+  right:24px!important;
+  top:14px!important;
+  height:2px!important;
+  border:0!important;
+  background:#dedbd5!important;
   box-shadow:none!important;
-  outline:0!important;
+  z-index:0!important;
+  display:block!important;
 }
-.wizard-page .wizard-progress::before,
+.wizard-page .wizard-step{position:relative!important;z-index:1!important;border:0!important;outline:0!important;box-shadow:none!important;text-decoration:none!important;background:transparent!important}
+.wizard-page .wizard-step span{position:relative!important;z-index:2!important;display:inline-flex!important;text-decoration:none!important;background:#faf9f7!important;box-shadow:0 0 0 6px #faf9f7!important}
+.wizard-page .wizard-step small{position:relative!important;z-index:2!important;display:block!important;margin-top:6px!important;padding:0 5px!important;background:#faf9f7!important;text-decoration:none!important;text-decoration-line:none!important;text-decoration-style:none!important;text-decoration-color:transparent!important}
 .wizard-page .wizard-progress::after,
 .wizard-page .wizard-step::before,
 .wizard-page .wizard-step::after,
 .wizard-page .wizard-step.active::before,
-.wizard-page .wizard-step.active::after{
-  content:none!important;
-  display:none!important;
-  visibility:hidden!important;
-  border:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-.wizard-page .wizard-step{
-  position:relative!important;
-  z-index:2!important;
-  border:0!important;
-  outline:0!important;
-  box-shadow:none!important;
-}
-.wizard-page .wizard-step span,
-.wizard-page .wizard-step small{
-  position:relative!important;
-  z-index:3!important;
-  display:inline-flex;
-  text-decoration:none!important;
-  text-decoration-line:none!important;
-  text-decoration-style:none!important;
-  text-decoration-color:transparent!important;
-}
-.wizard-page .wizard-step span{box-shadow:0 0 0 6px #faf9f7!important}
-.wizard-page button,
-.wizard-page button *{
-  text-decoration:none!important;
-  text-decoration-line:none!important;
-  text-decoration-style:none!important;
-  text-decoration-color:transparent!important;
-}
+.wizard-page .wizard-step.active::after{content:none!important;display:none!important;visibility:hidden!important}
+.wizard-page button,.wizard-page button *{text-decoration:none!important;text-decoration-line:none!important;text-decoration-style:none!important;text-decoration-color:transparent!important}
 
-@media (max-width:900px){.boss-dash-hero{padding-bottom:0}.auth-layout{gap:42px}}
-@media (max-width:640px){.hero:before{display:none}.section{padding-top:58px;padding-bottom:58px}.boss-cta-panel{padding:25px 22px!important;border-radius:20px!important}.boss-cta-panel .primary-button{width:100%}.auth-card{padding:24px!important;border-radius:20px!important}}
+@media (max-width:900px){.boss-dash-hero{padding-bottom:0}.auth-layout{gap:42px}.wizard-page .wizard-progress::before{left:20px!important;right:20px!important}}
+@media (max-width:640px){.hero:before{display:none}.section{padding-top:58px;padding-bottom:58px}.boss-cta-panel{padding:25px 22px!important;border-radius:20px!important}.boss-cta-panel .primary-button{width:100%}.auth-card{padding:24px!important;border-radius:20px!important}.wizard-page .wizard-progress::before{left:16px!important;right:16px!important;top:14px!important}.wizard-page .wizard-step small{padding:0 3px!important}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
