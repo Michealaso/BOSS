@@ -148,6 +148,24 @@ td,th{border-bottom-color:#edeae4!important}
 /* Footer */
 .footer{margin-top:88px!important}
 
+/* Build wizard: keep all option/button copy clean and free of browser text-decoration. */
+.wizard-page button,
+.wizard-page button * ,
+.wizard-page .choice-card,
+.wizard-page .choice-card * ,
+.wizard-page .style-card,
+.wizard-page .style-card * ,
+.wizard-page .plan-card,
+.wizard-page .plan-card * ,
+.wizard-page .wizard-topbar,
+.wizard-page .wizard-topbar * {
+  text-decoration:none!important;
+  text-decoration-line:none!important;
+  text-decoration-style:none!important;
+  text-decoration-color:transparent!important;
+}
+.wizard-page button{appearance:none;-webkit-appearance:none}
+
 /* Mobile finesse */
 @media (max-width:900px){
   .boss-dash-hero{padding-bottom:0}
