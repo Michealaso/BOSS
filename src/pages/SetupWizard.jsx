@@ -39,6 +39,24 @@ const plans = [
 
 function toggle(list, value) { return list.includes(value) ? list.filter(x => x !== value) : [...list, value]; }
 
+function buildAiPrompt(data, chosenPlan, recommended) {
+  const businessType = businessTypes.find(x => x.id === data.businessType)?.label || data.businessType || 'Not specified';
+  const goalText = data.goals.length
+    ? data.goals.map(id => {
+        const item = goals.find(x => x.id === id);
+        return item ? `${item.id} (${item.label})` : id;
+      }).join(', ')
+    : 'Not specified';
+  const channelText = data.channels.length
+    ? data.channels.map(id => {
+        const item = channels.find(x => x.id === id);
+        return item ? `${item.id} (${item.label})` : id;
+      }).join(', ')
+    : 'Not specified';
+
+  return `Build a complete BOSS website/business setup for the following customer.\n\nCUSTOMER\nName: ${data.name.trim() || 'Not specified'}\nEmail: ${data.email.trim() || 'Not specified'}\nPhone/WhatsApp: ${data.phone.trim() || 'Not specified'}\nCountry/market: ${data.country.trim() || 'Not specified'}\n\nBUSINESS\nBusiness name: ${data.businessName.trim() || 'Not specified'}\nBusiness type: ${businessType}\nPlan: ${chosenPlan?.label || data.plan || 'Not specified'}\n\nGOALS\n${goalText}\n\nCHANNELS / FEATURES\n${channelText}\n\nDESIGN DIRECTION\nStyle: ${data.style || 'Not specified'}\n\nRECOMMENDED STARTING POINT\nWebsite: ${recommended?.website?.name || 'Custom / not specified'}\nAI assistant: ${recommended?.bot?.name || 'None requested'}\n\nCUSTOMER NOTES\n${data.notes.trim() || 'No additional notes'}\n\nBUILD INSTRUCTIONS\nUse the information above as the source brief and treat it as the source of truth. Create the first production-ready version with polished responsive design, clear navigation, strong mobile UX, accessible interactions, appropriate calls to action, and the requested business features. Keep the customer's goals, selected features, and design direction at the center of the implementation. Do not invent important business facts, prices, addresses, products, services, claims, contact details, or other specifics that were not provided. The recommended website or AI assistant is a starting point, not a reason to ignore the customer's selected requirements. Implement every selected channel/feature that can be supported by the project. When an integration requires information or credentials that are not provided, do not fabricate them; leave the integration clearly prepared for configuration. Ask the admin for clarification only when a missing detail blocks the build.`;
+}
+
 export default function SetupWizard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -86,15 +104,7 @@ export default function SetupWizard() {
     setSubmitting(true);
     const chosenPlan = plans.find(p => p.id === data.plan) || plans[1];
     const chosenPrice = ({ starter: 79, business: 149, pro: 299 })[data.plan] ?? 149;
-    const orderNotes = [
-      'BOSS Setup Wizard build request',
-      `Business type: ${data.businessType}`,
-      `Goals: ${data.goals.join(', ')}`,
-      `Channels: ${data.channels.join(', ')}`,
-      `Style: ${data.style}`,
-      `Plan: ${chosenPlan.label}`,
-      data.notes ? `Extra notes: ${data.notes}` : ''
-    ].filter(Boolean).join('\n');
+    const aiPrompt = buildAiPrompt(data, chosenPlan, recommended);
     const firstProduct = recommended.website || recommended.bot || allProducts[0];
     const user = getUser();
     const id = makeId('BUILD');
@@ -116,9 +126,9 @@ export default function SetupWizard() {
       packageId: data.plan,
       status: 'Build requested',
       createdAt: new Date().toISOString(),
-      requirements: orderNotes,
-      notes: orderNotes,
-      buildDetails: { ...data, recommended: { websiteId: recommended.website?.id || null, websiteName: recommended.website?.name || null, botId: recommended.bot?.id || null, botName: recommended.bot?.name || null } },
+      requirements: aiPrompt,
+      notes: aiPrompt,
+      buildDetails: { ...data, recommended: { websiteId: recommended.website?.id || null, websiteName: recommended.website?.name || null, botId: recommended.bot?.id || null, botName: recommended.bot?.name || null }, aiBuildPrompt: aiPrompt },
       deliveryMessage: '',
       deliveryUrl: ''
     };
@@ -142,7 +152,7 @@ export default function SetupWizard() {
           channels: data.channels,
           style: data.style,
           plan: data.plan,
-          notes: data.notes,
+          notes: aiPrompt,
           recommendedWebsiteId: recommended.website?.id || null,
           recommendedWebsiteName: recommended.website?.name || null,
           recommendedBotId: recommended.bot?.id || null,
@@ -176,7 +186,7 @@ export default function SetupWizard() {
         {step === 2 && <StepCard title="Which tools should be included?" sub="These are the building blocks BOSS can combine into one setup."><div className="option-grid">{channels.map(({id,label,icon:Icon}) => <button key={id} type="button" className={data.channels.includes(id) ? 'choice-card selected' : 'choice-card'} onClick={()=>setData({...data,channels:toggle(data.channels,id)})}><span className="choice-icon"><Icon size={20}/></span><strong>{label}</strong><span className="choice-check">{data.channels.includes(id) ? <CheckCircle2 size={17}/> : null}</span></button>)}</div><div className="wizard-note"><ShieldCheck size={17}/><span>Start with the essentials. You can add more features later from your BOSS dashboard.</span></div></StepCard>}
         {step === 3 && <StepCard title="What should your brand feel like?" sub="This sets the direction for the first design and preview. You can change it later."><div className="style-grid">{styles.map(s=><button key={s} type="button" className={data.style===s ? 'style-card selected' : 'style-card'} onClick={()=>setData({...data,style:s})}><span className={`style-swatch style-${styles.indexOf(s)}`}/><div><strong>{s}</strong><small>{s==='Clean & modern'?'Crisp, calm and versatile.':s==='Bold & energetic'?'High contrast and punchy.':s==='Premium & elegant'?'Polished and refined.':'Warm, welcoming and simple.'}</small></div>{data.style===s&&<Check size={16}/>}</button>)}</div></StepCard>}
         {step === 4 && <StepCard title="Choose your starting level" sub="These are starting ranges, not a final quote. BOSS will tailor the build to your needs."><div className="plan-grid">{plans.map(p=><button key={p.id} type="button" className={data.plan===p.id ? 'plan-card selected' : 'plan-card'} onClick={()=>setData({...data,plan:p.id})}><div className="plan-head"><strong>{p.label}</strong><span>{p.range}</span></div><p>{p.desc}</p>{data.plan===p.id&&<div className="selected-tag"><Check size={13}/> Recommended starting point</div>}</button>)}</div></StepCard>}
-                {step === 5 && <StepCard title="Where should BOSS send your project details?" sub="These details go directly to the BOSS build team. We’ll use them to prepare your first version."><div className="wizard-fields single"><label>Your name<input required value={data.name} onChange={e=>setData({...data,name:e.target.value})} placeholder="Your name"/></label><label>Email<input required type="email" value={data.email} onChange={e=>setData({...data,email:e.target.value})} placeholder="you@example.com"/></label><label>WhatsApp / phone<input required value={data.phone} onChange={e=>setData({...data,phone:e.target.value})} placeholder="+256 ..."/></label><label>Anything else BOSS should know?<textarea rows="5" value={data.notes} onChange={e=>setData({...data,notes:e.target.value})} placeholder="Tell us about your products, services, booking process, etc."/></label></div></StepCard>}
+        {step === 5 && <StepCard title="Where should BOSS send your project details?" sub="These details go directly to the BOSS build team. We’ll use them to prepare your first version."><div className="wizard-fields single"><label>Your name<input required value={data.name} onChange={e=>setData({...data,name:e.target.value})} placeholder="Your name"/></label><label>Email<input required type="email" value={data.email} onChange={e=>setData({...data,email:e.target.value})} placeholder="you@example.com"/></label><label>WhatsApp / phone<input required value={data.phone} onChange={e=>setData({...data,phone:e.target.value})} placeholder="+256 ..."/></label><label>Anything else BOSS should know?<textarea rows="5" value={data.notes} onChange={e=>setData({...data,notes:e.target.value})} placeholder="Tell us about your products, services, booking process, etc."/></label></div></StepCard>}
         {step === 6 && <StepCard title="Review your BOSS setup" sub="Everything looks good? Build with BOSS and your full brief will be sent to the admin team."><div className="review-grid"><div><span>Business</span><strong>{data.businessName}</strong><small>{businessTypes.find(x=>x.id===data.businessType)?.label}</small></div><div><span>Plan</span><strong>{chosenPlan.label}</strong><small>Starting build package</small></div><div><span>Tools</span><strong>{data.channels.length} selected</strong><small>{data.channels.map(x=>channels.find(c=>c.id===x)?.label).join(', ')}</small></div><div><span>Style</span><strong>{data.style}</strong><small>{data.goals.map(x=>goals.find(g=>g.id===x)?.label).join(', ')}</small></div><div className="review-recommend"><div className="eyebrow">Recommended build</div>{recommended.website && <p><Globe2 size={15}/> {recommended.website.name}</p>}{recommended.bot && <p><Bot size={15}/> {recommended.bot.name}</p>}<small>Your brief is sent to the BOSS admin team when you click Build my BOSS setup. We’ll then prepare the first version for you.</small></div></div></StepCard>}
         <div className="wizard-actions">{step > 0 && <button className="secondary-button" onClick={back}><ArrowLeft size={16}/> Back</button>}{step < STEPS.length - 1 ? <button className="primary-button" disabled={!canContinue} onClick={next}>Continue <ArrowRight size={16}/></button> : <button className="primary-button" disabled={!canContinue} onClick={start}>Build my BOSS setup <Rocket size={16}/></button>}</div>
       </div>
