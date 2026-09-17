@@ -1,0 +1,96 @@
+/* Build wizard progress: circles on top, labels underneath, connector only behind circles. */
+.wizard-page .wizard-progress{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(56px,1fr))!important;
+  align-items:start!important;
+  width:min(760px,100%)!important;
+  min-width:0!important;
+}
+.wizard-page .wizard-progress::before{
+  content:""!important;
+  position:absolute!important;
+  left:calc(100% / 14)!important;
+  right:calc(100% / 14)!important;
+  top:15px!important;
+  height:2px!important;
+  margin:0!important;
+  background:#d9d6cf!important;
+  border:0!important;
+  z-index:0!important;
+  display:block!important;
+}
+.wizard-page .wizard-step{
+  position:relative!important;
+  z-index:1!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:7px!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  text-decoration:none!important;
+}
+.wizard-page .wizard-step span{
+  position:relative!important;
+  z-index:2!important;
+  width:30px!important;
+  height:30px!important;
+  min-width:30px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:#faf9f7!important;
+  border:1px solid #d9dee7!important;
+  box-shadow:0 0 0 6px #faf9f7!important;
+  color:#8190a5!important;
+  line-height:1!important;
+  flex:none!important;
+}
+.wizard-page .wizard-step.active span{
+  background:#faf9f7!important;
+  border-color:#5d58d6!important;
+  color:#5d58d6!important;
+}
+.wizard-page .wizard-step small{
+  position:relative!important;
+  z-index:3!important;
+  display:block!important;
+  margin:0!important;
+  padding:1px 6px!important;
+  max-width:100%!important;
+  background:#faf9f7!important;
+  color:#8190a5!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  border:0!important;
+  text-decoration:none!important;
+  text-decoration-line:none!important;
+}
+.wizard-page .wizard-step.active small{color:#202332!important}
+.wizard-page .wizard-progress::after,
+.wizard-page .wizard-step::before,
+.wizard-page .wizard-step::after,
+.wizard-page .wizard-step.active::before,
+.wizard-page .wizard-step.active::after{
+  content:none!important;
+  display:none!important;
+}
+@media(max-width:900px){
+  .wizard-page .wizard-progress{grid-template-columns:repeat(7,minmax(44px,1fr))!important;width:100%!important}
+  .wizard-page .wizard-step small{font-size:10px!important;padding-left:3px!important;padding-right:3px!important}
+}
+@media(max-width:640px){
+  .wizard-page .wizard-progress{grid-template-columns:repeat(7,minmax(34px,1fr))!important}
+  .wizard-page .wizard-step span{width:27px!important;height:27px!important;min-width:27px!important;box-shadow:0 0 0 4px #faf9f7!important}
+  .wizard-page .wizard-step small{font-size:8px!important}
+  .wizard-page .wizard-progress::before{top:13px!important}
+}
